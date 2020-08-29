@@ -1,0 +1,10 @@
+__pycache__*
+*.sublime-workspace
+*.sublime-project
+*.env
+*.egg-info/*
+dist/*
+certs/*
+temp/*
+Pip*
+pip.log
