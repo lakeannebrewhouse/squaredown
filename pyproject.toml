@@ -9,7 +9,7 @@ author-email = "aracnid@gmail.com"
 home-page = "https://github.com/lakeannebrewhouse/squaredown"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
-requires-python = ">=3.8"
+requires-python = "~=3.8"
 requires = [
     "dnspython ~=2.0",
     "pymongo ~=3.11",
