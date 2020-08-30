@@ -6,5 +6,8 @@ build-backend = "flit_core.buildapi"
 module = "squaredown"
 author = "Jason Romano"
 author-email = "aracnid@gmail.com"
+home-page = "https://github.com/lakeannebrewhouse/squaredown"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
+requires-python = ">=3.8"
+keywords = "square,mongodb"
