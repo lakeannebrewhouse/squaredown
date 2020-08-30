@@ -10,4 +10,15 @@ home-page = "https://github.com/lakeannebrewhouse/squaredown"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
 requires-python = ">=3.8"
+requires = [
+    "dnspython ~=2.0",
+    "pymongo ~=3.11",
+    "python-dotenv ~=0.14",
+    "squareup ~=6.3"
+]
 keywords = "square,mongodb"
+
+[tools.flit.metadata.requires-extra]
+test = ["pytest ~=6.0"]
+build = ["flit ~=2.3"]
+dev = ["pylint ~=2.6"]

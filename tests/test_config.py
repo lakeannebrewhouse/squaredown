@@ -3,15 +3,15 @@
 """
 import os
 
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 import pytest
-from pytz import utc
 
 import squaredown as sqd
 
 # initialize module variables
 TEST_PROPS_NAME = '_test_props'
+UTC = timezone.utc
 
 
 @pytest.fixture(name='config_obj')
@@ -68,7 +68,7 @@ def test_create_update_and_read_datetime_property(config_props):
     """Tests creating, updating, and reading datetime properties.
     """
     config_props.auto_update = False
-    dt_utc = utc.localize(datetime(2020, 8, 24, 10, 50))
+    dt_utc = datetime(2020, 8, 24, 10, 50).astimezone(UTC)
     config_props.prop_attr = dt_utc
     # config_props.update()
     props = config_props.props
@@ -84,7 +84,7 @@ def test_create_update_and_read_datetime_property(config_props):
 def test_create_update_and_read_datetime_property_auto_update(config_props):
     """Tests creating, updating, and reading datetime property with auto update.
     """
-    dt_utc = utc.localize(datetime(2020, 8, 24, 10, 50))
+    dt_utc = datetime(2020, 8, 24, 10, 50).astimezone(UTC)
     config_props.prop_attr_auto = dt_utc
     props = config_props.props
     assert config_props.prop_attr_auto == dt_utc
@@ -97,7 +97,7 @@ def test_create_update_and_read_datetime_property_subscripted(config_props):
     """Tests creating, updating, and reading subscripted property.
     """
     config_props.auto_update = False
-    dt_utc = utc.localize(datetime(2020, 8, 24, 10, 50))
+    dt_utc = datetime(2020, 8, 24, 10, 50).astimezone(UTC)
     config_props['sub'] = dt_utc
     # config_props.update()
     props = config_props.props
@@ -113,7 +113,7 @@ def test_create_update_and_read_datetime_property_subscripted(config_props):
 def test_create_update_and_read_datetime_property_subscripted_auto_update(config_props):
     """Tests creating, updating, and reading subscripted property, auto update.
     """
-    dt_utc = utc.localize(datetime(2020, 8, 24, 10, 50))
+    dt_utc = datetime(2020, 8, 24, 10, 50).astimezone(UTC)
     config_props['sub_auto'] = dt_utc
     props = config_props.props
     assert config_props['sub_auto'] == dt_utc
