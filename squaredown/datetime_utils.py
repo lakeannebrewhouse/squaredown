@@ -1,10 +1,10 @@
 """Provides additional datetime functions.
 """
+import re
+
 from datetime import datetime, timedelta
 from dateutil import tz
 from dateutil.parser import parse
-import os
-import re
 
 START_MIN = datetime(2000, 1, 1, 0, 0).astimezone()
 
@@ -12,7 +12,7 @@ def timespan(**kwargs):
     """Calculates the endpoints of a timespan.
 
     The timespan is specified by a set of keyword arguments. Separate arguments
-    are used to provide datetime objects or strings representing datetimes. 
+    are used to provide datetime objects or strings representing datetimes.
     The strings can be any parsable notation that results in a datetime object.
     This includes ISO Week Notation, e.g., "2020-W13".
 
@@ -58,7 +58,7 @@ def timespan(**kwargs):
 
         else:
             thru_dt = parse(thru_str).astimezone()
-            
+
     # check missing bounds
     if not begin_dt:
         begin_dt = START_MIN

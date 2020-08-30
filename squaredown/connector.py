@@ -18,8 +18,8 @@ logger.debug('module installed')
 class Connector(SquareInterface, MongoDBInterface):
     """Provides interfaces to Square and MongoDB to enable data exchange.
 
-    This class can be used on its own or inherited, but it is more useful to 
-    create subclasses that inherit from the Connector class for specific data 
+    This class can be used on its own or inherited, but it is more useful to
+    create subclasses that inherit from the Connector class for specific data
     type. The attributes and instance methods help with this.
 
     Attributes:
@@ -55,7 +55,7 @@ class Connector(SquareInterface, MongoDBInterface):
         """Calculates the endpoints of a timespan.
 
         This instance method supplies the generic timespan function with more
-        specific start times based on the last updated order or a preset 
+        specific start times based on the last updated order or a preset
         minimum start time.
 
         Args:
@@ -72,7 +72,7 @@ class Connector(SquareInterface, MongoDBInterface):
     def datetime_begin(self):
         """Provides the start time based on the last updated order.
 
-        If no orders have been saved, this instance method defaults to the 
+        If no orders have been saved, this instance method defaults to the
         minimum start time preset from the environment.
 
         Returns:

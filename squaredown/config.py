@@ -2,7 +2,6 @@
 """
 import os
 import logging
-    
 from squaredown.i_mongodb import MongoDBInterface
 
 # initialize logging
@@ -19,12 +18,10 @@ class Config(MongoDBInterface):
     """
 
     reserved = [
-        'auto_update', 
-        'db', 
-        'db_name', 
-        'mongo_client', 
-        'name', 
-        'props',
+        'auto_update',
+        'mdb',
+        'db_name',
+        'mongo_client',
     ]
 
     def __init__(self, name=None):
@@ -38,21 +35,27 @@ class Config(MongoDBInterface):
         self.auto_update = True
 
         # setup database collection
-        self._collection = self.db[self._collection_name]
+        self._collection = self.mdb[self._collection_name]
 
         # load the configuration set
         self.load_properties(name)
 
     @property
     def name(self):
+        """Get 'name'
+        """
         return self._name
 
     @name.setter
     def name(self, val):
+        """Set 'name'
+        """
         self._name = val
 
     @property
     def props(self):
+        """Get 'props'
+        """
         return self._props
 
     def __getattr__(self, prop_name):
@@ -64,13 +67,9 @@ class Config(MongoDBInterface):
         Returns:
             The value of the specified property.
         """
-        if prop_name in Config.reserved:
-            super().__getattr__(prop_name)
-
-        else:    
-            if self._props:
-                if prop_name in self._props:
-                    return self._props[prop_name]
+        if self._props:
+            if prop_name in self._props:
+                return self._props[prop_name]
 
         return None
 
@@ -95,7 +94,7 @@ class Config(MongoDBInterface):
         # skip object attributes
         if prop_name in Config.reserved or prop_name.startswith('_'):
             super().__setattr__(prop_name, val)
-            
+
         else:
             self._props[prop_name] = val
             if self.auto_update:
@@ -108,10 +107,6 @@ class Config(MongoDBInterface):
             prop_name: The property name.
             val: The value of the specified property.
         """
-        # skip object attributes
-        if prop_name in Config.reserved or prop_name.startswith('_'):
-            super().__setitem__(prop_name, val)
-            
         self.__setattr__(prop_name, val)
 
     def __delattr__(self, prop_name):
@@ -142,7 +137,10 @@ class Config(MongoDBInterface):
     def update(self):
         """Updates the configuration properties.
         """
-        replaced = self._collection.find_one_and_replace({'_id': self._name}, {'_id': self._name, 'props': self._props}, upsert=True)
+        self._collection.find_one_and_replace(
+            {'_id': self._name},
+            {'_id': self._name, 'props': self._props},
+            upsert=True)
 
     def delete(self):
         """Deletes the entire configuration set.

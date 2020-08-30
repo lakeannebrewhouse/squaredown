@@ -1,10 +1,10 @@
 """Class module to interface with MongoDB.
 """
-from dateutil import tz
 import logging
 import os
 
 from bson.codec_options import CodecOptions
+from dateutil import tz
 import pymongo
 
 # initialize logging
@@ -15,10 +15,16 @@ class MongoDBInterface:
     """MongoDB interface class.
 
     Attributes:
-        db: MongoDB database
+        mdb: MongoDB database
         db_name: Name of the interfacing database.
         mongo_client: MongoDB client.
+
+    Exceptions:
+        DuplicateKeyError: MongoDB duplicate key error
     """
+
+    DuplicateKeyError = pymongo.errors.DuplicateKeyError
+
 
     def __init__(self, db_name=None):
         """Initializes the interface with the database name.
@@ -45,9 +51,9 @@ class MongoDBInterface:
 
         # initialize mongodb database
         codec_options = CodecOptions(tz_aware=True, tzinfo=tz.tzlocal())
-        self.db = pymongo.database.Database(
-            client=self.mongo_client, 
-            name=self.db_name, 
+        self.mdb = pymongo.database.Database(
+            client=self.mongo_client,
+            name=self.db_name,
             codec_options=codec_options)
 
     def create_collection(self, name):
@@ -59,7 +65,7 @@ class MongoDBInterface:
         Returns:
             The MongoDB collection object.
         """
-        return self.db.create_collection(name=name)
+        return self.mdb.create_collection(name=name)
 
     def read_collection(self, name):
         """Returns the specified collection.
@@ -70,7 +76,7 @@ class MongoDBInterface:
         Returns:
             The MongoDB collection object.
         """
-        return self.db.get_collection(name=name)
+        return self.mdb.get_collection(name=name)
 
     def delete_collection(self, name):
         """Deletes the specified collection.
@@ -81,4 +87,4 @@ class MongoDBInterface:
         Returns:
             None
         """
-        self.db.drop_collection(name_or_collection=name)
+        self.mdb.drop_collection(name_or_collection=name)

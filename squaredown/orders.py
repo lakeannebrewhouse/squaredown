@@ -1,14 +1,10 @@
 """Orders class module for Squaredown.
 """
-from dateutil import tz, utils
-from dateutil.parser import parse
 import logging
 import os
 
 from squaredown.connector import Connector
-from squaredown.datetime_utils import timespan
 
-# initialize logging
 logger = logging.getLogger(__name__)
 
 
@@ -23,8 +19,8 @@ class Orders(Connector):
 
     def __init__(self):
         """Initializes the Orders Connector.
-        
-        Establishes connections to Square and MongoDB. 
+
+        Establishes connections to Square and MongoDB.
         Sets up access to configuration properties.
 
         """
@@ -39,8 +35,8 @@ class Orders(Connector):
     def pull(self, save_last=True, **kwargs):
         """Retrieves a set of Square Orders and saves them in MongoDB.
 
-        Args:   
-            save_last (bool): if set to True (default), details of the last 
+        Args:
+            save_last (bool): if set to True (default), details of the last
                 object retrieved is saved in the configuration properties
             **kwargs: keyword arguments that specify the timespan to retrieve
 
@@ -50,7 +46,7 @@ class Orders(Connector):
         start, end = self.timespan(collection='square_orders', **kwargs)
         logger.debug(f'timespan: {start}, {end}')
 
-        filter = {
+        square_filter = {
             'location_ids': self.location_ids,
             'query': {
                 'filter': {
@@ -68,7 +64,7 @@ class Orders(Connector):
             }
         }
 
-        orders = self.search('orders', filter)
+        orders = self.search('orders', square_filter)
 
         update_count = 0
         if orders:
@@ -82,19 +78,19 @@ class Orders(Connector):
                         if updated_at == self.props.last_updated:
                             continue
 
-                obj = self.update_order(order)
+                self.update_order(order)
                 update_count += 1
 
                 # update config properties
                 if save_last:
-                    self.props.last_updated = updated_at  # date retrieved and saved as utc
+                    self.props.last_updated = updated_at
                     self.props.last_id = order_id
                     self.props.update()
 
                 # debug, only process one order
                 # break
 
-        logger.debug('orders processed: {}'.format(update_count))
+        logger.debug(f'orders processed: {update_count}')
 
     def update_order(self, order):
         """Save the provided Square Object into MongoDB.
@@ -109,13 +105,11 @@ class Orders(Connector):
 
         # get order properties
         order_id = order['_id'] = order['id']
-        created_at = order.get('created_at')
         updated_at = order.get('updated_at')
 
         # log the update
-        logger.info('update_order {}: {}'.format(
-            order_id, 
-            updated_at.isoformat()[0:16]))
+        logger.info(f'update_order {order_id}: '
+                    f'{updated_at.isoformat()[0:16]}')
 
         # get the order state (with overrides)
         state = self.get_order_state(order)
@@ -132,28 +126,29 @@ class Orders(Connector):
 
         # update the database
         try:
-            self.db.square_orders.find_one_and_replace(
+            self.mdb.square_orders.find_one_and_replace(
                 filter={
                     '_id': order_id,
                     '$or': [{'_fixed': {'$exists': 0}}, {'_fixed': False}]
-                }, 
-                replacement=order, 
+                },
+                replacement=order,
                 upsert=True
             )
-        except pymongo.errors.DuplicateKeyError:
+        except self.DuplicateKeyError:
             logger.warning(f'Attempted to update FIXED Order "{order_id}"')
 
         return order
 
-    def get_order_state(self, order):
+    @staticmethod
+    def get_order_state(order):
         """Returns the current state of the Square Order.
 
         The state comes directly from the 'state' property of the Order.
         The standard values are: OPEN, COMPLETED, CANCELED.
         Additional custom values were added to provide more details based on
-        the 'status' of the Tender card details. 
+        the 'status' of the Tender card details.
 
-        The additional states are: 
+        The additional states are:
         - OPEN_TENDER_AUTHORIZED
         - OPEN_TENDER_VOIDED
         - OPEN_TENDER_FAILED
@@ -180,8 +175,8 @@ class Orders(Connector):
                 else:
                     state = 'OPEN_TENDER_MULTIPLE_ERROR'
                     logger.error(
-                        f'Multiple tenders found while processing square order '
-                        '{order_id}')
+                        'Multiple tenders found while processing square order '
+                        f'{order_id}')
 
             else:
                 state = 'OPEN_TENDER_MISSING'
@@ -194,7 +189,7 @@ class Orders(Connector):
         """Processes tender data as a separate Square collection.
 
         Args:
-            order: Square Order object 
+            order: Square Order object
         """
         api_payments = self.square_client.payments
 
@@ -222,7 +217,7 @@ class Orders(Connector):
                     elif tender['type'] == 'CASH':
                         pass
                     else:
-                        logger.error(f'Error calling PaymentsApi.get_payment')
+                        logger.error('Error calling PaymentsApi.get_payment')
                         logger.error(result.errors)
 
     def update_order_tender(self, obj, order):
@@ -252,11 +247,11 @@ class Orders(Connector):
         """Processes fulfillment data as a separate Square collection.
 
         Args:
-            order: Square Order object 
+            order: Square Order object
         """
         if 'fulfillments' in order:
             fulfillments = order['fulfillments']
-        
+
             for fulfillment in fulfillments:
                 self.update_fulfillment(fulfillment, order)
 
@@ -276,7 +271,7 @@ class Orders(Connector):
         """Processes itemization data as a separate Square collection.
 
         Args:
-            order: Square Order object 
+            order: Square Order object
         """
         if 'line_items' in order:
             line_items = order['line_items']
@@ -299,7 +294,7 @@ class Orders(Connector):
         """Processes refund data as a separate Square collection.
 
         Args:
-            order: Square Order object 
+            order: Square Order object
         """
         api_refunds = self.square_client.refunds
 
@@ -316,7 +311,7 @@ class Orders(Connector):
                     self.update_refund(refund)
                 elif result.is_error():
                     # no payment refund exists, determine reason
-                    tender = self.db.square_order_tenders.find_one(
+                    tender = self.mdb.square_order_tenders.find_one(
                         {'_id': refund_tender_id})
 
                     # cash refund
@@ -324,7 +319,7 @@ class Orders(Connector):
                         pass
                     else:
                         logger.error(
-                            f'Error calling RefundsApi.get_payment_refund')
+                            'Error calling RefundsApi.get_payment_refund')
                         logger.error(result.errors)
 
     def update_refund(self, obj):
@@ -342,7 +337,7 @@ class Orders(Connector):
         """Processes return data as a separate Square collection.
 
         Args:
-            order: Square Order object 
+            order: Square Order object
         """
         if 'returns' in order:
             returns = order['returns']
@@ -367,6 +362,12 @@ class Orders(Connector):
             {'_id': obj['uid']}, obj, upsert=True)
 
     def add_order_properties(self, obj, order):
+        """Adds additional properties to the object from the Order.
+
+        Args:
+            obj: Square Return Itemization object.
+            order: Square Order object.
+        """
         obj['order_id'] = order['id']
         obj['order_state'] = self.get_order_state(order)
         obj['order_created_at'] = order.get('created_at')

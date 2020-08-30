@@ -16,8 +16,6 @@ INFO = logging.INFO
 WARNING = logging.WARNING
 ERROR = logging.ERROR
 
-# initialize logging
-logger = logging.getLogger(__name__)
 
 def init_logger():
     """Initializes the logger.
@@ -30,8 +28,8 @@ def init_logger():
     logging_fullpath = os.path.join(logging_path, logging_filename)
 
     # read the config file
-    with open(logging_fullpath, 'rt') as f:
-        logging_config = json.load(f)
+    with open(logging_fullpath, 'rt') as file:
+        logging_config = json.load(file)
 
     # update the formatter, based on the enrivonment
     formatter = os.environ.get('LOGGING_FORMATTER')
