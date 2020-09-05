@@ -9,6 +9,7 @@ import json
 import logging
 import logging.config
 import os
+import sys
 
 # initialize module variables
 DEBUG = logging.DEBUG
@@ -20,6 +21,8 @@ ERROR = logging.ERROR
 def init_logger():
     """Initializes the logger.
 
+    The logging configuration json file must be in the command path.
+
     Environment Variables:
         LOGGING_CONFIG: The name and path of the logging configuration file.
         LOGGING_FORMATTER: Selected formatter specified in the config file.
@@ -28,8 +31,8 @@ def init_logger():
     logging_filename = os.environ.get('LOGGING_CONFIG')
 
     # get the path of the logging config file
-    logging_path = os.path.dirname(__file__)
-    logging_fullpath = os.path.join(logging_path, logging_filename)
+    command_path = os.path.dirname(sys.argv[0])
+    logging_fullpath = os.path.join(os.getcwd(), command_path, logging_filename)
 
     # read the config file
     with open(logging_fullpath, 'rt') as file:
