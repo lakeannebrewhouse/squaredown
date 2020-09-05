@@ -5,5 +5,4 @@ from squaredown.orders import Orders
 from squaredown.config import Config
 
 
-__all__ = ['orders']
-__version__ = '1.0.0'
+__version__ = '1.0.0-alpha.1'
