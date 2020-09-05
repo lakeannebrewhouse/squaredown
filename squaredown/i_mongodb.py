@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 class MongoDBInterface:
     """MongoDB interface class.
 
+    Environment Variables:
+        MONGODB_USER_TOKEN: MongoDB username and password.
+        MONGODB_HOSTNAME: MongoDB host where database is running.
+        MONGODB_DBNAME: Database name.
+
     Attributes:
         mdb: MongoDB database
         db_name: Name of the interfacing database.

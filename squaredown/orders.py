@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 class Orders(Connector):
     """Contains the code to connect and pull orders from Square to MongoDB.
 
+    Environment Variables:
+        SQUARE_LOCATIONS: List of Square Locations to process.
+
     Attributes:
         collection: Square Orders collection in MongoDB.
         collection_name: Name of the Square Orders collection in MongoDB.

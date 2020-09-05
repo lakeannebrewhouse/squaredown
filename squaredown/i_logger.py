@@ -19,6 +19,10 @@ ERROR = logging.ERROR
 
 def init_logger():
     """Initializes the logger.
+
+    Environment Variables:
+        LOGGING_CONFIG: The name and path of the logging configuration file.
+        LOGGING_FORMATTER: Selected formatter specified in the config file.
     """
     # get the filename of the config file
     logging_filename = os.environ.get('LOGGING_CONFIG')

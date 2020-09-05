@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 class SquareInterface:
     """Interface to Square.
 
+    Environment Variables:
+        SQUARE_ACCESS_TOKEN: OAuth 2.0 Access Token for Square API
+        SQUARE_ENV: Square API Environment
+
     Attributes:
         api_orders: Square client to the Orders API.
         api_payments: Square client to the Payments API.

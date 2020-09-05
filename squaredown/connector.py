@@ -22,6 +22,9 @@ class Connector(SquareInterface, MongoDBInterface):
     create subclasses that inherit from the Connector class for specific data
     type. The attributes and instance methods help with this.
 
+    Environment Variables:
+        SQUAREDOWN_START_STR: The minimum start time for Connector operations.
+        
     Attributes:
         config_name: Name of the configuration object in MongoDB.
         props: Configuration Properties object.
