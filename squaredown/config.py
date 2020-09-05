@@ -13,7 +13,7 @@ class Config(MongoDBInterface):
 
     Environment Variables:
         SQUAREDOWN_CONFIG: Name of the configuration collection in MongoDB.
-        
+
     Properties:
         auto_update: Process flag to automatically update properties to MongoDB.
         name: The name of the configuration set.

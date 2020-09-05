@@ -21,7 +21,7 @@ def fixture_config_obj():
 
     load_dotenv()
 
-    return sqd.config.Config()
+    return sqd.Config()
 
 @pytest.fixture(name='config_props')
 def fixture_config_props(config_obj):

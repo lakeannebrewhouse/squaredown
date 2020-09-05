@@ -24,7 +24,7 @@ class Connector(SquareInterface, MongoDBInterface):
 
     Environment Variables:
         SQUAREDOWN_START_STR: The minimum start time for Connector operations.
-        
+
     Attributes:
         config_name: Name of the configuration object in MongoDB.
         props: Configuration Properties object.
