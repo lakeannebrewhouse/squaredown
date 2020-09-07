@@ -3,7 +3,6 @@
 from datetime import datetime
 import os
 
-from dotenv import load_dotenv
 import pytest
 
 import squaredown as sqd
@@ -17,8 +16,6 @@ REF_THRU_STR = '2020-06-08T00:00:00-04:00'
 def fixture_connector():
     """Pytest fixture to initialize and return a Connector.
     """
-    load_dotenv()
-
     collection_name = 'square_orders'
     conn = sqd.Connector(collection_name)
 
@@ -58,7 +55,6 @@ def test_timespan_args_begin_str_and_thru_str(conn):
 def test_timespan_args_begin_str_missing_and_config():
     """Tests Connector's timespan arguments: begin_str missing with config
     """
-    load_dotenv()
     collection_name = '_test_collection_with_last_updated'
     conn = sqd.Connector(collection_name)
     last_updated = datetime(2019, 8, 5, 12, 34).astimezone()
@@ -74,8 +70,6 @@ def test_timespan_args_begin_str_missing_and_config():
 def test_timespan_args_begin_str_missing_and_no_config():
     """Tests Connector's timespan arguments: begin_str missing with no config
     """
-    load_dotenv()
-
     collection_name = '_test_collection'
     conn = sqd.Connector(collection_name)
 

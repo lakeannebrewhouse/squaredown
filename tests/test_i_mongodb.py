@@ -3,7 +3,6 @@
 from datetime import datetime
 from dateutil import tz, utils
 
-from dotenv import load_dotenv
 import pytest
 
 import squaredown as sqd
@@ -19,8 +18,6 @@ DT_LOCAL = utils.default_tzinfo(DT_NAIVE, tz.tzlocal())
 def fixture_mongodb_interface():
     """Pytest fixture to initialize and return the MongoDBInterface object.
     """
-    load_dotenv()
-
     return sqd.i_mongodb.MongoDBInterface(db_name=DB_NAME)
 
 def test_init_mongodb(mongodb_if):

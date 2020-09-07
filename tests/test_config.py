@@ -4,7 +4,6 @@
 import os
 
 from datetime import datetime, timezone
-from dotenv import load_dotenv
 import pytest
 
 import squaredown as sqd
@@ -18,9 +17,6 @@ UTC = timezone.utc
 def fixture_config_obj():
     """Pytest fixture to initialize and return a Config object
     """
-
-    load_dotenv()
-
     return sqd.Config()
 
 @pytest.fixture(name='config_props')

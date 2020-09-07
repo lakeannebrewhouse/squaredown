@@ -3,7 +3,6 @@
 from datetime import datetime
 import os
 
-from dotenv import load_dotenv
 import pytest
 
 from squaredown.i_square import SquareInterface
@@ -14,8 +13,6 @@ def fixture_square_iface():
     """Pytest fixture to initialize and return the SquareInterface object.
     """
     # logger.debug(f'using fixture "{name}"')
-    load_dotenv()
-
     return SquareInterface()
 
 def test_init_square(square_if):

@@ -1,14 +1,10 @@
 """Test functions for orders.py.
 """
-from dotenv import load_dotenv
-
 import squaredown as sqd
 
 def test_init_orders():
     """Tests that Orders() initializes successfully.
     """
-    load_dotenv()
-
     orders = sqd.Orders()
 
     assert orders
