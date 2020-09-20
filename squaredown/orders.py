@@ -118,9 +118,10 @@ class Orders(Connector):
         state = self.get_order_state(order)
         order['state'] = state
 
-        # set the "source" property, default to PoS
-        order['source'] = order.get('source', {'name': 'Point of Sale'})
+        # apply order customizations
+        self.apply_order_customizations(order)
 
+        # process property blocks
         self.process_tenders(order)
         self.process_fulfillments(order)
         self.process_itemizations(order)
@@ -141,6 +142,23 @@ class Orders(Connector):
             logger.warning(f'Attempted to update FIXED Order "{order_id}"')
 
         return order
+
+    def apply_order_customizations(self, order):
+        """Apply customizations to the Square Order object.
+
+        This method should be overridden to apply app-specific customizations.
+        The Square Order object is modified directly.
+
+        Args:
+            order: Square Order object
+
+        Returns:
+            None.
+        """
+        logger.debug(f'Applying default customizations: {self.collection_name}')
+
+        # set the "source" property, default to PoS
+        order['source'] = order.get('source', {'name': 'Point of Sale'})
 
     @staticmethod
     def get_order_state(order):
