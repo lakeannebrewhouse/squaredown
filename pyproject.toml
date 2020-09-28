@@ -11,6 +11,7 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
 requires-python = "~=3.8"
 requires = [
+    "aracnid-logger",
     "dnspython ~=2.0",
     "pymongo ~=3.11",
     "squareup ~=6.3"

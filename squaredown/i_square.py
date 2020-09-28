@@ -1,14 +1,14 @@
 """Class module to interface with Square.
 """
-import logging
 import os
 
+from aracnid_logger import Logger
 from dateutil import tz, utils
 from dateutil.parser import parse
-
 from square.client import Client
 
-logger = logging.getLogger(__name__)
+# initialize logging
+logger = Logger(__name__).get_logger()
 
 
 class SquareInterface:

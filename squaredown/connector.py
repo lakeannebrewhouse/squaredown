@@ -1,8 +1,9 @@
 """Class module that connects to both Square and MongoDB.
 """
 from datetime import datetime
-import logging
 import os
+
+from aracnid_logger import Logger
 
 from squaredown.config import Config
 from squaredown.datetime_utils import timespan as ts
@@ -10,7 +11,7 @@ from squaredown.i_mongodb import MongoDBInterface
 from squaredown.i_square import SquareInterface
 
 # initialize logging
-logger = logging.getLogger(__name__)
+logger = Logger(__name__).get_logger()
 
 logger.debug('module installed')
 

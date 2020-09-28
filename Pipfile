@@ -17,6 +17,7 @@ pytest = "*"
 dnspython = "~=2.0"
 pymongo = "~=3.11"
 squareup = "~=6.3"
+aracnid-logger = "*"
 
 [requires]
 python_version = "3.8"

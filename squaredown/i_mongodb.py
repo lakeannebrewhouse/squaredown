@@ -1,14 +1,14 @@
 """Class module to interface with MongoDB.
 """
-import logging
 import os
 
+from aracnid_logger import Logger
 from bson.codec_options import CodecOptions
 from dateutil import tz
 import pymongo
 
 # initialize logging
-logger = logging.getLogger(__name__)
+logger = Logger(__name__).get_logger()
 
 
 class MongoDBInterface:

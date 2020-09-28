@@ -1,11 +1,13 @@
 """Class module for configuration functions.
 """
 import os
-import logging
+
+from aracnid_logger import Logger
+
 from squaredown.i_mongodb import MongoDBInterface
 
 # initialize logging
-logger = logging.getLogger(__name__)
+logger = Logger(__name__).get_logger()
 
 
 class Config(MongoDBInterface):

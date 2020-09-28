@@ -1,11 +1,13 @@
 """Orders class module for Squaredown.
 """
-import logging
 import os
+
+from aracnid_logger import Logger
 
 from squaredown.connector import Connector
 
-logger = logging.getLogger(__name__)
+# initialize logging
+logger = Logger(__name__).get_logger()
 
 
 class Orders(Connector):
