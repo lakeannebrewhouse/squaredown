@@ -32,15 +32,16 @@ class Connector(SquareInterface, MongoDBInterface):
         start_min: Minimum start time to process objects
     """
 
-    def __init__(self, config_name):
+    def __init__(self, config_name=None):
         """Initializes the interfaces and instance attributes.
         """
         SquareInterface.__init__(self)
         MongoDBInterface.__init__(self)
 
         self.config_name = config_name
-        logger.debug(f'config_name: {self.config_name}')
-        self.props = Config(self.config_name)
+        if config_name:
+            logger.debug(f'config_name: {self.config_name}')
+            self.props = Config(self.config_name)
 
         self.set_start_min()
 

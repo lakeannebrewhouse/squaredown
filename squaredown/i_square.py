@@ -41,6 +41,7 @@ class SquareInterface:
         self.api_orders = self.square_client.orders
         self.api_payments = self.square_client.payments
         self.api_refunds = self.square_client.refunds
+        self.api_catalog = self.square_client.catalog
 
     def decode_order(self, order):
         """Decodes a Square Order into a python dictionary.
@@ -214,6 +215,28 @@ class SquareInterface:
                     fee['effective_at'] = self.decode_datetime(
                         fee['effective_at'])
 
+    def decode_catalog_obj(self, obj, collection):
+        """Decodes a Square Catalog object into a python dictionary.
+
+        Square represents timestamps as RFC 3339 strings. This method decodes
+        these strings into localized datetime objects.
+
+        Args:
+            obj: The Square Catalog object.
+            collection: one of the following catalog names
+                'square_categories', 'square_items', 'square_variations',
+                'square_modifiers'
+        """
+        if 'updated_at' in obj:
+            obj['updated_at'] = self.decode_datetime(
+                obj['updated_at'])
+
+        if collection == 'square_items':
+            variations = obj['item_data']['variations']
+            for variation in variations:
+                variation['updated_at'] = self.decode_datetime(
+                    variation['updated_at'])
+
     @staticmethod
     def decode_datetime(dt_str):
         """Decodes a Square datetime string into a datetime object
@@ -225,7 +248,6 @@ class SquareInterface:
             dt_str: Datetime string to decode.
         """
         return utils.default_tzinfo(parse(dt_str), tz.tzlocal())
-
 
     def search(self, obj_type, search_filter):
         """Retrieves a list of filtered Square objects.
@@ -242,7 +264,9 @@ class SquareInterface:
         # get the api for the object
         api_type = None
         if obj_type == 'orders':
-            api_type = self.square_client.orders
+            api_type = self.api_orders
+        elif obj_type == 'objects':
+            api_type = self.api_catalog
 
         if not api_type:
             return obj_list
@@ -251,7 +275,7 @@ class SquareInterface:
         result = self.search_fn(obj_type, search_filter)
         if result.is_success():
             loop_count += 1
-            obj_list = result.body[obj_type]
+            obj_list = result.body.get(obj_type)
 
             # process remaining pages
             cursor = result.body['cursor'] if 'cursor' in result.body else None
@@ -264,11 +288,11 @@ class SquareInterface:
                     obj_list.extend(result.body[obj_type])
                     cursor = result.body['cursor'] if 'cursor' in result.body else None
                 elif result.is_error():
-                    logger.error(f'Error calling OrdersApi.search_orders: {loop_count}')
+                    logger.error(f'Error calling Square Api ({obj_type}): {loop_count}')
                     logger.error(result.errors)
 
         elif result.is_error():
-            logger.error(f'Error calling OrdersApi.search_orders: loop {loop_count}')
+            logger.error(f'Error calling Square Api ({obj_type}): loop {loop_count}')
             logger.error(result.errors)
 
         return obj_list
@@ -285,5 +309,7 @@ class SquareInterface:
         """
         if obj_type == 'orders':
             return self.api_orders.search_orders(search_filter)
+        if obj_type == 'objects':
+            return self.api_catalog.search_catalog_objects(search_filter)
 
         return None
