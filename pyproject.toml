@@ -12,6 +12,7 @@ description-file = "README.md"
 requires-python = "~=3.8"
 requires = [
     "aracnid-logger",
+    "aracnid-utils",
     "dnspython ~=2.0",
     "pymongo ~=3.11",
     "squareup ~=6.3"

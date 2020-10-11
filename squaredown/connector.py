@@ -4,9 +4,9 @@ from datetime import datetime
 import os
 
 from aracnid_logger import Logger
+from aracnid_utils import timespan as ts
 
 from squaredown.config import Config
-from squaredown.datetime_utils import timespan as ts
 from squaredown.i_mongodb import MongoDBInterface
 from squaredown.i_square import SquareInterface
 
