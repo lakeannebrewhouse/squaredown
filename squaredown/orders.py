@@ -74,6 +74,10 @@ class Orders(Connector):
         update_count = 0
         if orders:
             for order in orders:
+                # save the raw order
+                self.save_raw_order(order)
+
+                # initialize order variables
                 order_id = order['id']
                 updated_at = self.decode_datetime(order['updated_at'])
 
@@ -83,6 +87,7 @@ class Orders(Connector):
                         if updated_at == self.props.last_updated:
                             continue
 
+                # update order
                 self.update_order(order)
                 update_count += 1
 
@@ -96,6 +101,30 @@ class Orders(Connector):
                 # break
 
         logger.debug(f'orders processed: {update_count}')
+
+    def save_raw_order(self, order):
+        """Save the provided raw Square Object into MongoDB.
+
+        Args:
+            order: Raw Square Order object
+
+        Returns:
+            The MongoDB representation of the raw Square Order object.
+        """
+        # get order properties
+        order_id = order['_id'] = order['id']
+
+        # log the update
+        logger.debug(f'{order_id}')
+
+        # update the database
+        self.mdb.raw_square_orders.find_one_and_replace(
+            filter={'_id': order_id},
+            replacement=order,
+            upsert=True
+        )
+
+        return order
 
     def update_order(self, order):
         """Save the provided Square Object into MongoDB.
