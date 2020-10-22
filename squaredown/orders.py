@@ -348,7 +348,7 @@ class Orders(Connector):
         Args:
             order: Square Order object
         """
-        api_refunds = self.square_client.refunds
+        order_id = order['_id']
 
         if 'refunds' in order:
             refunds = order['refunds']
@@ -356,7 +356,7 @@ class Orders(Connector):
                 refund_tender_id = refund['tender_id']
                 refund_id = '{}_{}'.format(refund_tender_id, refund['id'])
 
-                result = api_refunds.get_payment_refund(
+                result = self.api_refunds.get_payment_refund(
                     refund_id=refund_id)
                 if result.is_success():
                     refund = result.body['refund']
@@ -366,13 +366,15 @@ class Orders(Connector):
                     tender = self.mdb.square_order_tenders.find_one(
                         {'_id': refund_tender_id})
 
-                    # cash refund
+                    # cash or other tender refund
                     if tender and tender['type'] == 'CASH':
                         pass
+                    elif tender and tender['type'] == 'OTHER':
+                        logger.error(f'order: {order_id}, '
+                            'no refund payment for "OTHER" tender type')
                     else:
-                        logger.error(
-                            'Error calling RefundsApi.get_payment_refund')
-                        logger.error(result.errors)
+                        error_detail = result.errors[0]['detail']
+                        logger.error(f'order: {order_id}, {error_detail}')
 
     def update_refund(self, obj):
         """Updates MongoDB with the provided Square Refund object.

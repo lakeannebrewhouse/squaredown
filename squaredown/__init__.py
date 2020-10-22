@@ -6,4 +6,4 @@ from squaredown.connector import Connector
 from squaredown.orders import Orders
 
 
-__version__ = '1.0.0-alpha.8'
+__version__ = '1.0.0-alpha.9'
