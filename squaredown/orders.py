@@ -368,9 +368,10 @@ class Orders(Connector):
 
                     # cash or other tender refund
                     if tender and tender['type'] == 'CASH':
-                        pass
+                        logger.debug(f'order: {order_id}, '
+                            'no refund payment for "CASH" tender type')
                     elif tender and tender['type'] == 'OTHER':
-                        logger.error(f'order: {order_id}, '
+                        logger.debug(f'order: {order_id}, '
                             'no refund payment for "OTHER" tender type')
                     else:
                         error_detail = result.errors[0]['detail']
