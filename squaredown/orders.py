@@ -398,10 +398,11 @@ class Orders(Connector):
             returns = order['returns']
             for return_obj in returns:
                 source_order_id = return_obj['source_order_id']
-                return_line_items = return_obj['return_line_items']
-                for return_line_item in return_line_items:
-                    self.update_order_return_itemization(
-                        return_line_item, order, source_order_id)
+                return_line_items = return_obj.get('return_line_items')
+                if return_line_items:
+                    for return_line_item in return_line_items:
+                        self.update_order_return_itemization(
+                            return_line_item, order, source_order_id)
 
     def update_order_return_itemization(self, obj, order, source_order_id):
         """Updates MongoDB with the provided Square Return Itemization object.
