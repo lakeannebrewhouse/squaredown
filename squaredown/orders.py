@@ -200,12 +200,14 @@ class Orders(Connector):
         Additional custom values were added to provide more details based on
         the 'status' of the Tender card details.
 
+        If there are multiple tenders, the first non-CAPTURED status will be
+        used to set the additional states.
+
         The additional states are:
         - OPEN_TENDER_AUTHORIZED
         - OPEN_TENDER_VOIDED
         - OPEN_TENDER_FAILED
         - OPEN_TENDER_MISSING
-        - OPEN_TENDER_MULTIPLE_ERROR
 
         Args:
             order: Square Order object.
@@ -217,18 +219,14 @@ class Orders(Connector):
         if state and state == 'OPEN':
             tenders = order.get('tenders')
             if tenders:
-                if len(tenders) == 1:
-                    tender_status = tenders[0]['card_details']['status']
+                for tender in tenders:
+                    tender_status = tender['card_details']['status']
                     if tender_status != 'CAPTURED':
                         state = f'OPEN_TENDER_{tender_status}'
                         logger.error(
                             f'Tender issue ({state}) in square order '
-                            '{order_id}')
-                else:
-                    state = 'OPEN_TENDER_MULTIPLE_ERROR'
-                    logger.error(
-                        'Multiple tenders found while processing square order '
-                        f'{order_id}')
+                            f'{order_id}')
+                        break
 
             else:
                 state = 'OPEN_TENDER_MISSING'
