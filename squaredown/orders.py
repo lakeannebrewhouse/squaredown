@@ -331,14 +331,27 @@ class Orders(Connector):
     def update_order_itemization(self, obj, order):
         """Updates MongoDB with the provided Square Itemization object.
 
+        The object identifier, obj_id, is the concatenation of the order
+        id and the uid of the line item. The uid of the line item is not
+        guaranteed to be unique across all orders.
+
         Args:
             obj: Square Itemization object.
             order: Square Order object.
         """
         collection_name = 'square_order_itemizations'
         self.add_order_properties(obj, order)
+
+        # remove previous itemizations saved under uid
+        self.read_collection(collection_name).delete_one(
+            filter={'_id': obj['uid']})
+
+        # save/replace itemization
+        obj_id = f'{order["_id"]}_{obj["uid"]}'
         self.read_collection(collection_name).find_one_and_replace(
-            {'_id': obj['uid']}, obj, upsert=True)
+            filter={'_id': obj_id},
+            replacement=obj,
+            upsert=True)
 
     def process_refunds(self, order):
         """Processes refund data as a separate Square collection.
