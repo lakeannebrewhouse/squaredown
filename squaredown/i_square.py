@@ -42,6 +42,7 @@ class SquareInterface:
         self.api_payments = self.square_client.payments
         self.api_refunds = self.square_client.refunds
         self.api_catalog = self.square_client.catalog
+        self.api_locations = self.square_client.locations
 
     def decode_order(self, order):
         """Decodes a Square Order into a python dictionary.
@@ -236,6 +237,19 @@ class SquareInterface:
             for variation in variations:
                 variation['updated_at'] = self.decode_datetime(
                     variation['updated_at'])
+
+    def decode_location(self, location):
+        """Decodes a Square Location into a python dictionary.
+
+        Square represents timestamps as RFC 3339 strings. This method decodes
+        these strings into localized datetime objects.
+
+        Args:
+            location: The Square Location object.
+        """
+        if 'created_at' in location:
+            location['created_at'] = self.decode_datetime(
+                location['created_at'])
 
     @staticmethod
     def decode_datetime(dt_str):

@@ -3,6 +3,7 @@
 from squaredown.catalog import Catalog
 from squaredown.config import Config
 from squaredown.connector import Connector
+from squaredown.locations import Locations
 from squaredown.orders import Orders
 
 
