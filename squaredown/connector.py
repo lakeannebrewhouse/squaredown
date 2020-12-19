@@ -69,7 +69,9 @@ class Connector(SquareInterface, MongoDBInterface):
         Returns:
             The start and end datetime objects that define the timespan.
         """
-        if 'begin' not in kwargs and 'begin_str' not in kwargs:
+        begin = kwargs.get('begin')
+        begin_str = kwargs.get('begin_str')
+        if not begin and not begin_str:
             kwargs['begin'] = self.datetime_begin()
 
         return ts(**kwargs)

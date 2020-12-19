@@ -78,3 +78,18 @@ def test_timespan_args_begin_str_missing_and_no_config():
 
     assert isinstance(start, datetime)
     assert start.isoformat() == start_first.isoformat()
+
+def test_timespan_args_begin_none_and_config():
+    """Tests Connector's timespan arguments: begin is None with config
+    """
+    collection_name = '_test_collection_with_last_updated'
+    conn = sqd.Connector(collection_name)
+    last_updated = datetime(2019, 8, 5, 12, 34).astimezone()
+    conn.props.last_updated = last_updated
+    conn.props.update()
+
+    start, _ = conn.timespan(begin=None, thru_str=REF_THRU_STR)
+    last_updated = conn.props.last_updated
+
+    assert isinstance(start, datetime)
+    assert start == last_updated
