@@ -3,6 +3,7 @@
 from datetime import datetime
 import os
 
+from aracnid_utils import timespan as ts
 import pytest
 
 import squaredown as sqd
@@ -10,6 +11,7 @@ import squaredown as sqd
 
 REF_BEGIN_STR = '2020-06-01T00:00:00-04:00'
 REF_THRU_STR = '2020-06-08T00:00:00-04:00'
+REF_WEEK_STR = '2020-W49'
 
 
 @pytest.fixture(name='conn')
@@ -93,3 +95,23 @@ def test_timespan_args_begin_none_and_config():
 
     assert isinstance(start, datetime)
     assert start == last_updated
+
+def test_timespan_args_week_str_and_config():
+    """Tests Connector's timespan arguments: week_str with config
+
+    If the last_updated datetime is set in the config, it will override the start for a timespan.
+    This tests that the start will NOT be overridden when week_str is specified.
+    """
+    collection_name = '_test_collection_with_last_updated'
+    conn = sqd.Connector(collection_name)
+    last_updated = datetime(2019, 12, 19, 12, 34).astimezone()
+    conn.props.last_updated = last_updated
+    conn.props.update()
+
+    week_start, _ = ts(week_str=REF_WEEK_STR)
+
+    start, _ = conn.timespan(week_str=REF_WEEK_STR)
+    last_updated = conn.props.last_updated
+
+    assert isinstance(start, datetime)
+    assert start == week_start

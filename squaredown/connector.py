@@ -71,7 +71,8 @@ class Connector(SquareInterface, MongoDBInterface):
         """
         begin = kwargs.get('begin')
         begin_str = kwargs.get('begin_str')
-        if not begin and not begin_str:
+        week_str = kwargs.get('week_str')
+        if not begin and not begin_str and not week_str:
             kwargs['begin'] = self.datetime_begin()
 
         return ts(**kwargs)
