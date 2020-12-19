@@ -1,9 +1,11 @@
 __pycache__*
 *.sublime-workspace
 *.sublime-project
+*.code-workspace
 *.env
 *.egg-info/*
 dist/*
 certs/*
 temp/*
 pip.log
+.vscode/*
