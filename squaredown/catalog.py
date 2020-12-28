@@ -58,7 +58,8 @@ class Catalog(Connector):
 
         square_filter = {
             'object_types': [self.object_type],
-            'begin_time': start.isoformat()
+            'begin_time': start.isoformat(),
+            'include_deleted_objects': True
         }
 
         objects = self.search('objects', square_filter)
