@@ -459,3 +459,4 @@ class Orders(Connector):
         obj['order_state'] = self.get_order_state(order)
         obj['order_created_at'] = order.get('created_at')
         obj['order_updated_at'] = order.get('updated_at')
+        obj['order_location_id'] = order.get('location_id')
