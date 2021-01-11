@@ -342,6 +342,9 @@ class Orders(Connector):
         collection_name = 'square_order_itemizations'
         self.add_order_properties(obj, order)
 
+        # apply itemization customizations
+        self.apply_itemization_customizations(obj, order)
+
         # remove previous itemizations saved under uid
         self.read_collection(collection_name).delete_one(
             filter={'_id': obj['uid']})
@@ -428,11 +431,28 @@ class Orders(Connector):
         self.read_collection(collection_name).find_one_and_replace(
             {'_id': obj['uid']}, obj, upsert=True)
 
+    def apply_itemization_customizations(self, itemization, order):
+        """Apply customizations to the Square Order Itemization object.
+
+        This method should be overridden to apply app-specific customizations.
+        The Square Order Itemization object is modified directly.
+
+        Args:
+            itemization: Square Order Itemization object
+
+        Returns:
+            None.
+        """
+        logger.debug(f'Applying default customizations: {self.collection_name}')
+
+        # set the "source" property, default to PoS
+        itemization['order_source'] = order['source']['name']
+
     def add_order_properties(self, obj, order):
         """Adds additional properties to the object from the Order.
 
         Args:
-            obj: Square Return Itemization object.
+            obj: Square object to apply order properties.
             order: Square Order object.
         """
         obj['order_id'] = order['id']
