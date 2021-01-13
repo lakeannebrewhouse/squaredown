@@ -439,6 +439,7 @@ class Orders(Connector):
 
         Args:
             itemization: Square Order Itemization object
+            order: Square Order object
 
         Returns:
             None.
@@ -447,6 +448,9 @@ class Orders(Connector):
 
         # set the "source" property, default to PoS
         itemization['order_source'] = order['source']['name']
+
+        # convert the quantity property to integer
+        itemization['quantity'] = int(itemization['quantity'])
 
     def add_order_properties(self, obj, order):
         """Adds additional properties to the object from the Order.
