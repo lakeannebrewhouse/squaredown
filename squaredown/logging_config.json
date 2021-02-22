@@ -1,0 +1,41 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "default": {
+            "format": "[{asctime}] {levelname:8s} in {module}/{funcName}():: {message}",
+            "style": "{"
+        },
+        "deployed": {
+            "format": "{levelname:8s} in {module}/{funcName}():: {message}",
+            "style": "{"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "default",
+            "stream": "ext://sys.stdout"
+        }
+    },
+    "loggers": {
+        "squaredown.i_logger": {
+            "level": "DEBUG",
+            "propagate": false
+        },
+        "squaredown.catalog": {
+            "level": "DEBUG"
+        },
+        "squaredown.orders": {
+            "level": "INFO"
+        },
+        "urllib3": {
+            "level": "WARNING"
+        }
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console"]
+    }
+}
