@@ -5,6 +5,7 @@ import os
 from aracnid_logger import Logger
 
 from squaredown.connector import Connector
+from squaredown.itemizations import Itemizations
 
 # initialize logging
 logger = Logger(__name__).get_logger()
@@ -36,6 +37,9 @@ class Orders(Connector):
         # initialize MongoDB collection
         self.collection = self.read_collection(self.collection_name)
         self.location_ids = os.environ.get('SQUARE_LOCATIONS').split(',')
+
+        # initialize reference to Itemizations
+        self.itemizations = Itemizations()
 
     def pull(self, save_last=True, **kwargs):
         """Retrieves a set of Square Orders and saves them in MongoDB.
@@ -323,38 +327,14 @@ class Orders(Connector):
         Args:
             order: Square Order object
         """
-        if 'line_items' in order:
-            line_items = order['line_items']
-            for line_item in line_items:
-                self.update_order_itemization(line_item, order)
+        # make additional properties
+        props = self.make_order_properties(order)
+        props['itemization_type'] = 'sale'
 
-    def update_order_itemization(self, obj, order):
-        """Updates MongoDB with the provided Square Itemization object.
-
-        The object identifier, obj_id, is the concatenation of the order
-        id and the uid of the line item. The uid of the line item is not
-        guaranteed to be unique across all orders.
-
-        Args:
-            obj: Square Itemization object.
-            order: Square Order object.
-        """
-        collection_name = 'square_order_itemizations'
-        self.add_order_properties(obj, order)
-
-        # apply itemization customizations
-        self.apply_itemization_customizations(obj, order)
-
-        # remove previous itemizations saved under uid
-        self.read_collection(collection_name).delete_one(
-            filter={'_id': obj['uid']})
-
-        # save/replace itemization
-        obj_id = f'{order["_id"]}_{obj["uid"]}'
-        self.read_collection(collection_name).find_one_and_replace(
-            filter={'_id': obj_id},
-            replacement=obj,
-            upsert=True)
+        # process each line item
+        line_items = order.get('line_items', [])
+        for line_item in line_items:
+            self.itemizations.update_itemization(line_item, order, props)
 
     def process_refunds(self, order):
         """Processes refund data as a separate Square collection.
@@ -408,49 +388,19 @@ class Orders(Connector):
         Args:
             order: Square Order object
         """
-        if 'returns' in order:
-            returns = order['returns']
-            for return_obj in returns:
-                source_order_id = return_obj['source_order_id']
-                return_line_items = return_obj.get('return_line_items')
-                if return_line_items:
-                    for return_line_item in return_line_items:
-                        self.update_order_return_itemization(
-                            return_line_item, order, source_order_id)
+        # process each return
+        returns = order.get('returns', [])
+        for return_obj in returns:
+            # make additional properties
+            props = self.make_order_properties(order)
+            props['itemization_type'] = 'return'
+            props['source_order_id'] = return_obj['source_order_id']
 
-    def update_order_return_itemization(self, obj, order, source_order_id):
-        """Updates MongoDB with the provided Square Return Itemization object.
-
-        Args:
-            obj: Square Return Itemization object.
-            order: Square Order object.
-        """
-        collection_name = 'square_order_return_itemizations'
-        self.add_order_properties(obj, order)
-        obj['source_order_id'] = source_order_id
-        self.read_collection(collection_name).find_one_and_replace(
-            {'_id': obj['uid']}, obj, upsert=True)
-
-    def apply_itemization_customizations(self, itemization, order):
-        """Apply customizations to the Square Order Itemization object.
-
-        This method should be overridden to apply app-specific customizations.
-        The Square Order Itemization object is modified directly.
-
-        Args:
-            itemization: Square Order Itemization object
-            order: Square Order object
-
-        Returns:
-            None.
-        """
-        logger.debug(f'Applying default customizations: {self.collection_name}')
-
-        # set the "source" property, default to PoS
-        itemization['order_source'] = order['source']['name']
-
-        # convert the quantity property to integer
-        itemization['quantity'] = int(itemization['quantity'])
+            # process each return line item
+            return_line_items = return_obj.get('return_line_items', [])
+            for return_line_item in return_line_items:
+                self.itemizations.update_itemization(
+                    return_line_item, order, props)
 
     def add_order_properties(self, obj, order):
         """Adds additional properties to the object from the Order.
@@ -459,8 +409,27 @@ class Orders(Connector):
             obj: Square object to apply order properties.
             order: Square Order object.
         """
-        obj['order_id'] = order['id']
-        obj['order_state'] = self.get_order_state(order)
-        obj['order_created_at'] = order.get('created_at')
-        obj['order_updated_at'] = order.get('updated_at')
-        obj['order_location_id'] = order.get('location_id')
+        props = self.make_order_properties(order)
+        obj.update(props)
+
+    def make_order_properties(self, order):
+        props = {
+            'order_id': order['id'],
+            'order_state': self.get_order_state(order),
+            'order_created_at': order.get('created_at'),
+            'order_updated_at': order.get('updated_at'),
+            'order_location_id': order.get('location_id')
+        }
+
+        return props
+
+if __name__ == '__main__':
+    # setup logging
+    logger = Logger(__name__).get_logger()
+
+    # collection = 'square_orders'
+    logger.info('working')
+
+    square_orders = Orders()
+    # square_orders.mdb.square_order_itemizations.drop()
+    square_orders.pull(begin_str='2016-01-01', thru_str='2016-03-31')
