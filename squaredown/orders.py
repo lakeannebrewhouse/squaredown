@@ -31,55 +31,40 @@ class Orders(Connector):
 
         """
         self.collection_name = 'square_orders'
+        self.collection_name_raw = 'raw_square_orders'
         logger.debug(f'collection_name: {self.collection_name}')
         super().__init__(config_name=self.collection_name)
 
         # initialize MongoDB collection
         self.collection = self.read_collection(self.collection_name)
+        self.collection_raw = self.read_collection(self.collection_name_raw)
         self.location_ids = os.environ.get('SQUARE_LOCATIONS').split(',')
 
         # initialize reference to Itemizations
         self.itemizations = Itemizations()
 
-    def pull(self, save_last=True, **kwargs):
-        """Retrieves a set of Square Orders and saves them in MongoDB.
+    def pull(self, save_last=True, from_raw=False, **kwargs):
+        """Retrieves/processes a set of Square Orders and saves them in MongoDB.
 
         Args:
             save_last (bool): if set to True (default), details of the last
                 object retrieved is saved in the configuration properties
+            from_raw (bool): if set to True, reprocesses orders previously saved
+                to raw MongoDB collection (default=False)
             **kwargs: keyword arguments that specify the timespan to retrieve
 
         Returns:
             None
         """
-        start, end = self.timespan(collection='square_orders', **kwargs)
-        logger.debug(f'timespan: {start}, {end}')
-
-        square_filter = {
-            'location_ids': self.location_ids,
-            'query': {
-                'filter': {
-                    'date_time_filter': {
-                        'updated_at': {
-                            'start_at': start.isoformat(),
-                            'end_at': end.isoformat()
-                        }
-                    }
-                },
-                'sort': {
-                    'sort_field': 'UPDATED_AT',
-                    'sort_order': 'ASC'
-                }
-            }
-        }
-
-        orders = self.search('orders', square_filter)
+        # read the orders
+        orders = self.read_orders(from_raw, **kwargs)
 
         update_count = 0
         if orders:
             for order in orders:
                 # save the raw order
-                self.save_raw_order(order)
+                if not from_raw:
+                    self.save_raw_order(order)
 
                 # initialize order variables
                 order_id = order['id']
@@ -106,6 +91,57 @@ class Orders(Connector):
 
         logger.debug(f'orders processed: {update_count}')
 
+    def read_orders(self, from_raw=False, **kwargs):
+        """Returns a set of Square Orders.
+
+        Args:
+            from_raw (bool): if set to True, reprocesses orders previously saved
+                to raw MongoDB collection (default=False)
+            **kwargs: keyword arguments that specify the timespan to retrieve
+
+        Returns:
+            List of Square Orders.
+        """
+        start, end = self.timespan(collection='square_orders', **kwargs)
+        logger.debug(f'timespan: {start}, {end}')
+
+        if from_raw:
+            mongodb_filter = {
+                'updated_at': {
+                    '$gte': start.isoformat(),
+                    '$lt': end.isoformat()
+                }
+            }
+            cursor = self.collection_raw.find(
+                filter=mongodb_filter,
+                sort=[('updated_at', 1)]
+            )
+
+            orders = list(cursor)
+
+        else:
+            square_filter = {
+                'location_ids': self.location_ids,
+                'query': {
+                    'filter': {
+                        'date_time_filter': {
+                            'updated_at': {
+                                'start_at': start.isoformat(),
+                                'end_at': end.isoformat()
+                            }
+                        }
+                    },
+                    'sort': {
+                        'sort_field': 'UPDATED_AT',
+                        'sort_order': 'ASC'
+                    }
+                }
+            }
+
+            orders = self.search('orders', square_filter)
+
+        return orders        
+
     def save_raw_order(self, order):
         """Save the provided raw Square Object into MongoDB.
 
@@ -122,7 +158,7 @@ class Orders(Connector):
         logger.debug(f'{order_id}')
 
         # update the database
-        self.mdb.raw_square_orders.find_one_and_replace(
+        self.collection_raw.find_one_and_replace(
             filter={'_id': order_id},
             replacement=order,
             upsert=True
@@ -165,7 +201,7 @@ class Orders(Connector):
 
         # update the database
         try:
-            self.mdb.square_orders.find_one_and_replace(
+            self.collection.find_one_and_replace(
                 filter={
                     '_id': order_id,
                     '$or': [{'_fixed': {'$exists': 0}}, {'_fixed': False}]
@@ -432,4 +468,4 @@ if __name__ == '__main__':
 
     square_orders = Orders()
     # square_orders.mdb.square_order_itemizations.drop()
-    square_orders.pull(begin_str='2016-01-01', thru_str='2016-03-31')
+    square_orders.pull(from_raw=True, begin_str='2016-01-01', thru_str='2016-03-31')
