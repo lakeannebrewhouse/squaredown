@@ -73,13 +73,14 @@ class Itemizations(Connector):
             order: Square Order object.
             props: Additional properties to set.
         """
-        # get object properties
-        order_id = order['_id']
-        itemization_id = itemization['uid']
-        obj_id = f'{order_id}_{itemization_id}'
-
         # save the raw itemization
         self.save_raw_itemization(itemization, order)
+
+        # make the itemization identifier
+        order_id = order['_id']
+        uid = itemization['uid']
+        itemization_id = f'{order_id}_{uid}'
+        itemization['id'] = itemization_id
 
         # add additional properties
         itemization.update(props)
@@ -93,7 +94,7 @@ class Itemizations(Connector):
 
         # save/replace itemization
         self.collection.find_one_and_replace(
-            filter={'_id': obj_id},
+            filter={'_id': itemization_id},
             replacement=itemization,
             upsert=True)
 
