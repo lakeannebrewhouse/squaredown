@@ -1,5 +1,6 @@
 """Orders class module for Squaredown.
 """
+from datetime import timezone
 import os
 
 from aracnid_logger import Logger
@@ -108,8 +109,8 @@ class Orders(Connector):
         if from_raw:
             mongodb_filter = {
                 'updated_at': {
-                    '$gte': start.isoformat(),
-                    '$lt': end.isoformat()
+                    '$gte': start.astimezone(timezone.utc).isoformat(),
+                    '$lt': end.astimezone(timezone.utc).isoformat()
                 }
             }
             cursor = self.collection_raw.find(
