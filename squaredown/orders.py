@@ -3,6 +3,7 @@
 import os
 
 from aracnid_logger import Logger
+from tqdm import tqdm
 
 from squaredown.connector import Connector
 from squaredown.itemizations import Itemizations
@@ -60,34 +61,33 @@ class Orders(Connector):
         orders = self.read_orders(from_raw, **kwargs)
 
         update_count = 0
-        if orders:
-            for order in orders:
-                # save the raw order
-                if not from_raw:
-                    self.save_raw_order(order)
+        for order in tqdm(orders, desc='orders'):
+            # save the raw order
+            if not from_raw:
+                self.save_raw_order(order)
 
-                # initialize order variables
-                order_id = order['id']
-                updated_at = self.decode_datetime(order['updated_at'])
+            # initialize order variables
+            order_id = order['id']
+            updated_at = self.decode_datetime(order['updated_at'])
 
-                # check last updated object for duplicate
-                if update_count == 0:
-                    if order_id == self.props.last_id:
-                        if updated_at == self.props.last_updated:
-                            continue
+            # check last updated object for duplicate
+            if update_count == 0:
+                if order_id == self.props.last_id:
+                    if updated_at == self.props.last_updated:
+                        continue
 
-                # update order
-                self.update_order(order)
-                update_count += 1
+            # update order
+            self.update_order(order)
+            update_count += 1
 
-                # update config properties
-                if save_last:
-                    self.props.last_updated = updated_at
-                    self.props.last_id = order_id
-                    self.props.update()
+            # update config properties
+            if save_last:
+                self.props.last_updated = updated_at
+                self.props.last_id = order_id
+                self.props.update()
 
-                # debug, only process one order
-                # break
+            # debug, only process one order
+            # break
 
         logger.debug(f'orders processed: {update_count}')
 

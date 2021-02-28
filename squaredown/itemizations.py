@@ -50,7 +50,7 @@ class Itemizations(Connector):
         obj_id = f'{order_id}_{itemization_id}'
 
         # log the update
-        logger.debug(f'{obj_id}')
+        # logger.debug(f'{obj_id}')
 
         # update the database
         self.mdb.raw_square_order_itemizations.find_one_and_replace(

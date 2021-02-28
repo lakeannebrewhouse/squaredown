@@ -15,7 +15,8 @@ requires = [
     "aracnid-utils",
     "dnspython ~=2.0",
     "pymongo ~=3.11",
-    "squareup ~=6.3"
+    "squareup ~=6.3",
+    "tqdm"
 ]
 keywords = "square,mongodb"
 
