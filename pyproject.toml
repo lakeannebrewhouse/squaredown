@@ -11,10 +11,10 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
 requires-python = ">=3.9"
 requires = [
+    "aracnid-config",
     "aracnid-logger",
     "aracnid-utils",
-    "dnspython ~=2.0",
-    "pymongo ~=3.11",
+    "i-mongodb",
     "squareup ~=6.3",
     "tqdm"
 ]
@@ -23,4 +23,3 @@ keywords = "square,mongodb"
 [tools.flit.metadata.requires-extra]
 test = ["pytest ~=6.0"]
 build = ["flit ~=2.3"]
-dev = ["pylint ~=2.6"]

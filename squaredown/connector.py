@@ -3,11 +3,11 @@
 from datetime import datetime
 import os
 
+from aracnid_config import Config
 from aracnid_logger import Logger
 from aracnid_utils import timespan as ts
+from i_mongodb import MongoDBInterface
 
-from squaredown.config import Config
-from squaredown.i_mongodb import MongoDBInterface
 from squaredown.i_square import SquareInterface
 
 # initialize logging
