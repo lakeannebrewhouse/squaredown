@@ -114,7 +114,10 @@ class Itemizations(Connector):
         logger.debug(f'Applying default customizations: {self.collection_name}')
 
         # set the "source" property, default to PoS
-        itemization['order_source'] = order['source']['name']
+        source = 'Point of Sale'
+        if 'source' in order:
+            source = order['source'].get('name', 'Point of Sale')
+        itemization['order_source'] = source
 
         # convert the quantity property to integer
         itemization['quantity'] = int(itemization['quantity'])
