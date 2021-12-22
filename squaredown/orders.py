@@ -250,6 +250,8 @@ class Orders(Connector):
         - OPEN_TENDER_FAILED
         - OPEN_TENDER_MISSING
 
+        Cash App Pay shows up as type=WALLET
+
         Args:
             order: Square Order object.
         """
@@ -261,13 +263,16 @@ class Orders(Connector):
             tenders = order.get('tenders')
             if tenders:
                 for tender in tenders:
-                    tender_status = tender['card_details']['status']
-                    if tender_status != 'CAPTURED':
-                        state = f'OPEN_TENDER_{tender_status}'
-                        logger.error(
-                            f'Tender issue ({state}) in square order '
-                            f'{order_id}')
+                    if tender.get('type') == 'WALLET':
                         break
+                    else:
+                        tender_status = tender['card_details']['status']
+                        if tender_status != 'CAPTURED':
+                            state = f'OPEN_TENDER_{tender_status}'
+                            logger.error(
+                                f'Tender issue ({state}) in square order '
+                                f'{order_id}')
+                            break
 
             else:
                 state = 'OPEN_TENDER_MISSING'
