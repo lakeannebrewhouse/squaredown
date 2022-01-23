@@ -37,7 +37,7 @@ def test_init_connector_mongodb(conn):
     """
     # test authentication
     mdb = conn.mdb
-    assert mdb
+    assert mdb is not None
 
     # verify database name
     db_name = os.environ.get('MONGODB_DBNAME')

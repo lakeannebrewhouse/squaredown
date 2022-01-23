@@ -9,5 +9,5 @@ def test_init_catalog():
 
     assert catalog
     assert catalog.api_catalog
-    assert catalog.collection
+    assert catalog.collection is not None
     assert catalog.props

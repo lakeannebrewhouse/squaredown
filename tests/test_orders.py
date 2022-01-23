@@ -9,6 +9,6 @@ def test_init_orders():
 
     assert orders
     assert orders.api_orders
-    assert orders.collection
+    assert orders.collection is not None
     assert orders.location_ids
     assert orders.props
