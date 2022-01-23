@@ -15,7 +15,7 @@ requires = [
     "aracnid-logger",
     "aracnid-utils",
     "i-mongodb",
-    "squareup ~=6.3",
+    "squareup",
     "tqdm"
 ]
 keywords = "square,mongodb"
