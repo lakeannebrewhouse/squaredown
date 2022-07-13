@@ -9,7 +9,7 @@ author-email = "aracnid@gmail.com"
 home-page = "https://github.com/lakeannebrewhouse/squaredown"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 requires = [
     "aracnid-config",
     "aracnid-logger",
