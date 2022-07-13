@@ -263,9 +263,15 @@ class Orders(Connector):
             tenders = order.get('tenders')
             if tenders:
                 for tender in tenders:
-                    if tender.get('type') == 'WALLET':
+                    if tender.get('type') in ('WALLET', 'BUY_NOW_PAY_LATER'):
                         break
                     else:
+                        if 'card_details' not in tender:
+                            logger.error(
+                                f'Unknown tender type in square order {order_id}'
+                            )
+                            raise Exception('Need to fix tender handling')
+
                         tender_status = tender['card_details']['status']
                         if tender_status != 'CAPTURED':
                             state = f'OPEN_TENDER_{tender_status}'
