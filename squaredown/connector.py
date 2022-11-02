@@ -35,9 +35,14 @@ class Connector(SquareInterface, MongoDBInterface):
     def __init__(self, config_name=None):
         """Initializes the interfaces and instance attributes.
         """
+        # initialize Square interface
         SquareInterface.__init__(self)
-        MongoDBInterface.__init__(self)
 
+        # initialize MongoDB interface
+        MongoDBInterface.__init__(self)
+        self.mdb = MongoDBInterface().get_mdb()
+
+        # initialize configuration properties
         self.config_name = config_name
         if config_name:
             logger.debug(f'config_name: {self.config_name}')

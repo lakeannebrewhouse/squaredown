@@ -141,7 +141,7 @@ class Orders(Connector):
 
             orders = self.search('orders', square_filter)
 
-        return orders        
+        return orders
 
     def save_raw_order(self, order):
         """Save the provided raw Square Object into MongoDB.
@@ -265,20 +265,20 @@ class Orders(Connector):
                 for tender in tenders:
                     if tender.get('type') in ('WALLET', 'BUY_NOW_PAY_LATER'):
                         break
-                    else:
-                        if 'card_details' not in tender:
-                            logger.error(
-                                f'Unknown tender type in square order {order_id}'
-                            )
-                            raise Exception('Need to fix tender handling')
 
-                        tender_status = tender['card_details']['status']
-                        if tender_status != 'CAPTURED':
-                            state = f'OPEN_TENDER_{tender_status}'
-                            logger.error(
-                                f'Tender issue ({state}) in square order '
-                                f'{order_id}')
-                            break
+                    if 'card_details' not in tender:
+                        logger.error(
+                            f'Unknown tender type in square order {order_id}'
+                        )
+                        raise Exception('Need to fix tender handling')
+
+                    tender_status = tender['card_details']['status']
+                    if tender_status != 'CAPTURED':
+                        state = f'OPEN_TENDER_{tender_status}'
+                        logger.error(
+                            f'Tender issue ({state}) in square order '
+                            f'{order_id}')
+                        break
 
             else:
                 state = 'OPEN_TENDER_MISSING'
@@ -396,7 +396,7 @@ class Orders(Connector):
             refunds = order['refunds']
             for refund in refunds:
                 refund_tender_id = refund['tender_id']
-                refund_id = '{}_{}'.format(refund_tender_id, refund['id'])
+                refund_id = f'{refund_tender_id}_{refund["id"]}'
 
                 result = self.api_refunds.get_payment_refund(
                     refund_id=refund_id)
@@ -461,6 +461,13 @@ class Orders(Connector):
         obj.update(props)
 
     def make_order_properties(self, order):
+        """Make order properties object.
+
+        Args:
+            order: Square Order object.
+
+        Return properties object.
+        """
         props = {
             'order_id': order['id'],
             'order_state': self.get_order_state(order),
