@@ -8,4 +8,4 @@ from squaredown.locations import Locations
 from squaredown.orders import Orders
 
 
-__version__ = '1.1'
+__version__ = '1.2.0'
