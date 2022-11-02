@@ -1,25 +1,36 @@
+[tool.poetry]
+name = "squaredown"
+version = "1.1.0"
+description = "Customized Square interface"
+authors = ["Jason Romano <aracnid@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/aracnid/aracnid-config"
+keywords = ["python", "square", "mongodb"]
+packages = [{include = "squaredown"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aracnid-config = "^1.0"
+aracnid-logger = "^1.0"
+aracnid-utils = "^1.0"
+i-mongodb = "^1.0"
+squareup = "^19.1"
+tqdm = "^4.64"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.15"
+pytest = "^7.2"
+
 [build-system]
-requires = ["flit_core >=2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.flit.metadata]
-module = "squaredown"
-author = "Jason Romano"
-author-email = "aracnid@gmail.com"
-home-page = "https://github.com/lakeannebrewhouse/squaredown"
-classifiers = ["License :: OSI Approved :: MIT License"]
-description-file = "README.md"
-requires-python = ">=3.10"
-requires = [
-    "aracnid-config",
-    "aracnid-logger",
-    "aracnid-utils",
-    "i-mongodb",
-    "squareup",
-    "tqdm"
-]
-keywords = "square,mongodb"
+[tool.pytest.ini_options]
+addopts = "-p no:warnings"
+log_cli = true
+log_cli_level = "DEBUG"
 
-[tools.flit.metadata.requires-extra]
-test = ["pytest ~=6.0"]
-build = ["flit ~=2.3"]
+[tool.pylint.'MESSAGES CONTROL']
+disable = "logging-fstring-interpolation"
+
