@@ -31,7 +31,7 @@ class Locations(Connector):
         super().__init__(config_name=self.collection_name)
 
         # initialize MongoDB collection
-        self.collection = self.read_collection(self.collection_name)
+        self.collection = self.mdb.read_collection(self.collection_name)
 
     def pull(self):
         """Retrieves a set of Square Locations and saves them in MongoDB.

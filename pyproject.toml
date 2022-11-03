@@ -14,20 +14,21 @@ python = "^3.10"
 aracnid-config = "^1.0"
 aracnid-logger = "^1.0"
 aracnid-utils = "^1.0"
-i-mongodb = "^1.0"
+i-mongodb = "^2.0"
 squareup = "^19.1"
 tqdm = "^4.64"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15"
 pytest = "^7.2"
+pytest-cov = "^4.0.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-p no:warnings"
+addopts = "-p no:warnings --cov-report xml:tests/cov.xml --cov=i_mongodb tests/"
 log_cli = true
 log_cli_level = "DEBUG"
 

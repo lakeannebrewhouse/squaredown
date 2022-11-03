@@ -28,7 +28,7 @@ class Itemizations(Connector):
         super().__init__(config_name=self.collection_name)
 
         # initialize MongoDB collection
-        self.collection = self.read_collection(self.collection_name)
+        self.collection = self.mdb.read_collection(self.collection_name)
 
     def save_raw_itemization(self, itemization, order):
         """Save the provided raw Square Object into MongoDB.

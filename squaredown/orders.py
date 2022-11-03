@@ -38,8 +38,8 @@ class Orders(Connector):
         super().__init__(config_name=self.collection_name)
 
         # initialize MongoDB collection
-        self.collection = self.read_collection(self.collection_name)
-        self.collection_raw = self.read_collection(self.collection_name_raw)
+        self.collection = self.mdb.read_collection(self.collection_name)
+        self.collection_raw = self.mdb.read_collection(self.collection_name_raw)
         self.location_ids = os.environ.get('SQUARE_LOCATIONS').split(',')
 
         # initialize reference to Itemizations
@@ -331,7 +331,7 @@ class Orders(Connector):
         """
         collection_name = 'square_order_tenders'
         self.add_order_properties(obj, order)
-        self.read_collection(collection_name).find_one_and_replace(
+        self.mdb.read_collection(collection_name).find_one_and_replace(
             {'_id': obj['id']}, obj, upsert=True)
 
     def update_payment(self, obj):
@@ -342,7 +342,7 @@ class Orders(Connector):
         """
         collection_name = 'square_payments'
         self.decode_payment(obj)
-        self.read_collection(collection_name).find_one_and_replace(
+        self.mdb.read_collection(collection_name).find_one_and_replace(
             {'_id': obj['id']}, obj, upsert=True)
 
     def process_fulfillments(self, order):
@@ -366,7 +366,7 @@ class Orders(Connector):
         """
         collection_name = 'square_order_fulfillments'
         self.add_order_properties(obj, order)
-        self.read_collection(collection_name).find_one_and_replace(
+        self.mdb.read_collection(collection_name).find_one_and_replace(
             {'_id': obj['uid']}, obj, upsert=True)
 
     def process_itemizations(self, order):
@@ -427,7 +427,7 @@ class Orders(Connector):
         """
         collection_name = 'square_refunds'
         self.decode_refund(obj)
-        self.read_collection(collection_name).find_one_and_replace(
+        self.mdb.read_collection(collection_name).find_one_and_replace(
             {'_id': obj['id']}, obj, upsert=True)
 
     def process_returns(self, order):
