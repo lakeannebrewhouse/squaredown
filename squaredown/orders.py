@@ -61,21 +61,18 @@ class Orders(Connector):
         # read the orders
         orders = self.read_orders(from_raw, **kwargs)
 
+        # check last updated object for duplicate
+        if len(orders) > 0:
+            order = orders[0]
+            if order['id'] == self.props.last_id:
+                if self.decode_datetime(order['updated_at']) == self.props.last_updated:
+                    orders.pop()
+
         update_count = 0
         for order in tqdm(orders, desc='orders'):
             # save the raw order
             if not from_raw:
                 self.save_raw_order(order)
-
-            # initialize order variables
-            order_id = order['id']
-            updated_at = self.decode_datetime(order['updated_at'])
-
-            # check last updated object for duplicate
-            if update_count == 0:
-                if order_id == self.props.last_id:
-                    if updated_at == self.props.last_updated:
-                        continue
 
             # update order
             self.update_order(order)
@@ -83,14 +80,14 @@ class Orders(Connector):
 
             # update config properties
             if save_last:
-                self.props.last_updated = updated_at
-                self.props.last_id = order_id
+                self.props.last_updated = self.decode_datetime(order['updated_at'])
+                self.props.last_id = order['id']
                 self.props.update()
 
             # debug, only process one order
             # break
 
-        logger.debug(f'orders processed: {update_count}')
+        logger.info(f'orders processed: {update_count}')
 
     def read_orders(self, from_raw=False, **kwargs):
         """Returns a set of Square Orders.
