@@ -77,10 +77,13 @@ class Orders(Connector):
             # update order
             self.update_order(order)
             update_count += 1
+            updated_at = order['updated_at']
+            if isinstance(updated_at, str):
+                updated_at = self.decode_datetime(order['updated_at'])
 
             # update config properties
             if save_last:
-                self.props.last_updated = self.decode_datetime(order['updated_at'])
+                self.props.last_updated = updated_at
                 self.props.last_id = order['id']
                 self.props.update()
 
