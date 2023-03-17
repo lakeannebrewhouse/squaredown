@@ -66,7 +66,7 @@ class Orders(Connector):
             order = orders[0]
             if order['id'] == self.props.last_id:
                 if self.decode_datetime(order['updated_at']) == self.props.last_updated:
-                    orders.pop()
+                    orders.pop(0)
 
         update_count = 0
         for order in tqdm(orders, desc='orders'):
