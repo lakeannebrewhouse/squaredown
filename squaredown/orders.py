@@ -61,12 +61,16 @@ class Orders(Connector):
         # read the orders
         orders = self.read_orders(from_raw, **kwargs)
 
+        # end if no orders
+        if not orders or len(orders) == 0:
+            logger.info(f'orders processed: 0')
+            return
+
         # check last updated object for duplicate
-        if len(orders) > 0:
-            order = orders[0]
-            if order['id'] == self.props.last_id:
-                if self.decode_datetime(order['updated_at']) == self.props.last_updated:
-                    orders.pop(0)
+        order = orders[0]
+        if order['id'] == self.props.last_id:
+            if self.decode_datetime(order['updated_at']) == self.props.last_updated:
+                orders.pop(0)
 
         update_count = 0
         for order in tqdm(orders, desc='orders'):
