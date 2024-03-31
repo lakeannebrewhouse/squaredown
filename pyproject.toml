@@ -28,7 +28,8 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-p no:warnings --cov-report xml:tests/cov.xml --cov=i_mongodb tests/"
+addopts = "-p no:warnings --cov-report xml:tests/cov.xml --cov=squaredown tests/"
+#addopts = "-p no:warnings
 log_cli = true
 log_cli_level = "DEBUG"
 
