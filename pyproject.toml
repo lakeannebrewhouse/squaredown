@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "squaredown"
-version = "1.5.0"
+version = "1.5.1"
 description = "Customized Square interface"
 authors = ["Jason Romano <aracnid@gmail.com>"]
 license = "MIT"
