@@ -92,7 +92,8 @@ class Payouts(Connector):
 
         result = self.api_payouts.list_payouts(
             begin_time=start.isoformat(),
-            end_time=end.isoformat()
+            end_time=end.isoformat(),
+            sort_order='ASC'
         )
 
         if result.is_success():
@@ -102,7 +103,9 @@ class Payouts(Connector):
                 if result.cursor:
                     result = self.api_payouts.list_payouts(
                         begin_time=start.isoformat(),
-                        end_time=end.isoformat()
+                        end_time=end.isoformat(),
+                        sort_order='ASC',
+                        cursor=result.cursor
                     )
                 else:
                     break
@@ -227,7 +230,8 @@ class PayoutEntries(Connector):
         payout_entries = []
 
         result = self.api_payouts.list_payout_entries(
-            payout_id=payout_id
+            payout_id=payout_id,
+            sort_order='ASC'
         )
 
         if result.is_success():
@@ -237,6 +241,7 @@ class PayoutEntries(Connector):
                 if result.cursor:
                     result = self.api_payouts.list_payout_entries(
                         payout_id=payout_id,
+                        sort_order='ASC',
                         cursor=result.cursor
                     )
                 else:
