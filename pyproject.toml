@@ -19,7 +19,7 @@ squareup = "^19.1"
 tqdm = "^4.64"
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^2.15"
+pylint = "^3.0"
 pytest = "^7.2"
 pytest-cov = "^4.0.0"
 
