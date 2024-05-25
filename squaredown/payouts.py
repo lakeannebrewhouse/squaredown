@@ -60,7 +60,7 @@ class Payouts(Connector):
 
         # end if no payouts
         if not payouts or len(payouts) == 0:
-            logger.info('payouts processed: 0')
+            logger.debug('payouts processed: 0')
             return
 
         update_count = 0
@@ -75,7 +75,7 @@ class Payouts(Connector):
             # debug, only process one payout
             # break
 
-        logger.info('payouts processed: %s', update_count)
+        logger.debug('payouts processed: %s', update_count)
 
     def read(self, **kwargs):
         """Returns a set of Square Payouts.
@@ -135,7 +135,7 @@ class Payouts(Connector):
         updated_at = payout.get('updated_at')
 
         # log the update
-        logger.info('update_payout %s: %s', payout_id, updated_at.isoformat()[0:16])
+        logger.debug('update_payout %s: %s', payout_id, updated_at.isoformat()[0:16])
 
         # apply payout customizations
         self.apply_payout_customizations(payout)
@@ -204,7 +204,7 @@ class PayoutEntries(Connector):
 
         # end if no payout entries
         if not payout_entries or len(payout_entries) == 0:
-            logger.info('payout entries processed: 0')
+            logger.debug('payout entries processed: 0')
             return
 
         update_count = 0
@@ -216,7 +216,7 @@ class PayoutEntries(Connector):
             # debug, only process one payout
             # break
 
-        logger.info('payout entries processed: %s', update_count)
+        logger.debug('payout entries processed: %s', update_count)
 
     def read(self, payout_id: str) -> list:
         """Returns a set of Square Payout Entries.
@@ -299,14 +299,3 @@ class PayoutEntries(Connector):
         # logger.debug('Applying default customizations: %s', self.collection_name)
 
         return
-
-if __name__ == '__main__':
-    # setup logging
-    logger = Logger(__name__).get_logger()
-
-    # collection = 'square_payouts'
-    logger.info('working')
-
-    square_payouts = Payouts()
-    # square_payouts.mdb.square_payout_itemizations.drop()
-    square_payouts.pull(begin_str='2024-03-05', thru_str='2024-03-11')

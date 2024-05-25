@@ -6,4 +6,4 @@ from squaredown.locations import Locations
 from squaredown.orders import Orders
 
 
-__version__ = "1.6.3"
+__version__ = "1.6.4"

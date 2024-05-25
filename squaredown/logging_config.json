@@ -27,7 +27,13 @@
         "squaredown.catalog": {
             "level": "DEBUG"
         },
+        "squaredown.itemizations": {
+            "level": "WARNING"
+        },
         "squaredown.orders": {
+            "level": "WARNING"
+        },
+        "squaredown.payouts": {
             "level": "INFO"
         },
         "urllib3": {
