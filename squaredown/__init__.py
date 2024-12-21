@@ -7,4 +7,4 @@ from squaredown.orders import Orders
 from squaredown.report_data import ReportData
 
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
