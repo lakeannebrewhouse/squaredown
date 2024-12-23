@@ -797,9 +797,16 @@ class ReportData():
                     'order_created_at': {
                         '$gte': datetime.fromisoformat(self.data['timespan']['start']),
                         '$lt': datetime.fromisoformat(self.data['timespan']['end'])
-                    },
-                    'order_state': 'COMPLETED',
-                    'category_name': {'$exists': 1}
+                    }, 
+                    'order_state': {
+                        '$in': [
+                            'COMPLETED', 'OPEN'
+                        ]
+                    }, 
+                    'category_name': {
+                        '$exists': 1
+                    }, 
+                    'itemization_type': 'return'
                 }
             }, {
                 '$addFields': {
@@ -809,7 +816,7 @@ class ReportData():
                 }
             }, {
                 '$group': {
-                    '_id': '$category_name',
+                    '_id': '$category_name', 
                     'gross_return_money_amount': {
                         '$sum': '$gross_return_money.amount'
                     }
@@ -817,7 +824,7 @@ class ReportData():
             }
         ]
 
-        category_return_data = list(self.mdb.square_order_return_itemizations.aggregate(
+        category_return_data = list(self.mdb.square_order_itemizations.aggregate(
             pipeline=pipeline
         ))
         total_category_returns = 0
@@ -840,6 +847,8 @@ class ReportData():
 
             # set refund amount for the category
             self.data['category_sales'][category_name]['refunds'] = -category_amount
+
+        # set the total refund amount
         self.data['category_sales']['total']['refunds'] = -total_category_returns
 
     def set_collected_refund_data(self):
