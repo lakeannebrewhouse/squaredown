@@ -1,5 +1,7 @@
 """Accounting sales data functions.
 """
+# pyright: reportOptionalMemberAccess=false
+
 from datetime import datetime
 
 from aracnid_logger import Logger
@@ -547,8 +549,12 @@ class ReportData():
                     'preserveNullAndEmptyArrays': True
                 }
             }, {
+                '$unwind': {
+                    'path': '$returns.return_taxes'
+                }
+            }, {
                 '$addFields': {
-                    'base_refund_money': '$returns.return_line_items.variation_total_price_money',
+                    'base_refund_money': '$returns.return_line_items.gross_return_money',
                     'modifier_refund_money': {
                         '$ifNull': [
                             '$returns.return_line_items.return_modifiers.total_price_money', {
@@ -569,6 +575,32 @@ class ReportData():
                             ]
                         },
                         'currency': 'USD'
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'gross_refund_money_amount': {
+                        '$cond': {
+                            'if': {
+                                '$eq': [
+                                    '$returns.return_taxes.type', 'INCLUSIVE'
+                                ]
+                            }, 
+                            'then': {
+                                '$subtract': [
+                                    '$gross_refund_money.amount', '$tax_money.amount'
+                                ]
+                            }, 
+                            'else': '$gross_refund_money.amount'
+                        }
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'net_refund_money_amount': {
+                        '$subtract': [
+                            '$gross_refund_money_amount', '$discount_money.amount'
+                        ]
                     }
                 }
             }, {
@@ -598,7 +630,10 @@ class ReportData():
                 '$group': {
                     '_id': None,
                     'total_gross_refund_money_amount': {
-                        '$sum': '$gross_refund_money.amount'
+                        '$sum': '$gross_refund_money_amount'
+                    },
+                    'total_net_refund_money_amount': {
+                        '$sum': '$net_refund_money_amount'
                     },
                     'total_discount_refund_money_amount': {
                         '$sum': '$discount_money.amount'
@@ -608,15 +643,6 @@ class ReportData():
                     },
                     'total_tip_refund_money_amount': {
                         '$sum': '$tip_money.amount'
-                    }
-                }
-            }, {
-                '$addFields': {
-                    'total_net_refund_money_amount': {
-                        '$subtract': [
-                            '$total_gross_refund_money_amount',
-                            '$total_discount_refund_money_amount'
-                        ]
                     }
                 }
             }, {
@@ -815,10 +841,47 @@ class ReportData():
                     }
                 }
             }, {
+                '$lookup': {
+                    'from': 'square_orders', 
+                    'localField': 'order_id', 
+                    'foreignField': '_id', 
+                    'as': 'order'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$order'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$order.returns'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$order.returns.return_taxes'
+                }
+            }, {
+                '$addFields': {
+                    'gross_return_money_amount': {
+                        '$cond': {
+                            'if': {
+                                '$eq': [
+                                    '$order.returns.return_taxes.type', 'INCLUSIVE'
+                                ]
+                            }, 
+                            'then': {
+                                '$subtract': [
+                                    '$gross_return_money.amount', '$total_tax_money.amount'
+                                ]
+                            }, 
+                            'else': '$gross_return_money.amount'
+                        }
+                    }
+                }
+            }, {
                 '$group': {
                     '_id': '$category_name', 
                     'gross_return_money_amount': {
-                        '$sum': '$gross_return_money.amount'
+                        '$sum': '$gross_return_money_amount'
                     }
                 }
             }
