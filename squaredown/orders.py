@@ -279,7 +279,7 @@ class Orders(Connector):
                     tender_status = tender['card_details']['status']
                     if tender_status != 'CAPTURED':
                         state = f'OPEN_TENDER_{tender_status}'
-                        logger.error(
+                        logger.warning(
                             f'Tender issue ({state}) in square order '
                             f'{order_id}')
                         break
