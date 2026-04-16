@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "squaredown"
-version = "1.7.4"
+version = "1.8.0"
 description = "Customized Square interface"
 authors = ["Jason Romano <aracnid@gmail.com>"]
 license = "MIT"
@@ -29,7 +29,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 addopts = "-p no:warnings --cov-report xml:tests/cov.xml --cov=squaredown tests/"
-#addopts = "-p no:warnings
+#addopts = "-p no:warnings"
 log_cli = true
 log_cli_level = "DEBUG"
 
