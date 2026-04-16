@@ -42,6 +42,7 @@ class ReportData():
         self.set_category_sales_data()
         self.set_collected_sales_data()
         self.set_service_charge_data()
+        self.set_tax_data()
 
         # calculate refunds
         #set_gift_card_refund_data()
@@ -92,6 +93,11 @@ class ReportData():
                 'buy_now_pay_later': {'sales': 0, 'refunds': 0, 'net': 0},
                 'other': {'sales': 0, 'refunds': 0, 'net': 0},
                 'wallet': {'sales': 0, 'refunds': 0, 'net': 0}
+            },
+            'sales_tax': {
+                'total': {'sales': 0, 'refunds': 0, 'net': 0},
+                'state': {'sales': 0, 'refunds': 0, 'net': 0},
+                'local': {'sales': 0, 'refunds': 0, 'net': 0},
             },
             'category_sales': {
                 'total': {'sales': 0, 'refunds': 0, 'net': 0},
@@ -510,6 +516,51 @@ class ReportData():
                 else:
                     logger.error('unhandled service charge found: %s', service_charge_name)
 
+    def set_tax_data(self):
+        """Get the tax data from MongoDB for the given timespan.
+        """
+        pipeline = [
+            {
+                '$match': {
+                    'created_at': {
+                        '$gte': datetime.fromisoformat(self.data['timespan']['start']),
+                        '$lt': datetime.fromisoformat(self.data['timespan']['end'])
+                    },
+                    'state': {'$in': ['COMPLETED', 'OPEN']}
+                }
+            }, {
+                '$unwind': {
+                    'path': '$taxes',
+                    'preserveNullAndEmptyArrays': False
+                }
+            }, {
+                '$group': {
+                    '_id': '$taxes.name',
+                    'amount': {
+                        '$sum': '$taxes.applied_money.amount'
+                    }
+                }
+            }
+        ]
+
+        results = list(self.mdb.square_orders.aggregate(pipeline=pipeline))
+        if results:
+            for tax in results:
+                tax_name = tax['_id']
+                self.data['sales_tax']['total']['sales'] += tax['amount']
+                if 'VA' in tax_name:
+                    self.data['sales_tax']['state']['sales'] += tax['amount']
+                else:
+                    self.data['sales_tax']['local']['sales'] += tax['amount']
+
+        # check total sales tax against summary tax amount
+        if self.data['sales_tax']['total']['sales'] != self.data['summary']['tax']['sales']:
+            logger.warning(
+                'Total sales tax does not match summary tax amount: %d != %d',
+                self.data['sales_tax']['total']['sales'],
+                self.data['summary']['tax']['sales']
+            )
+
     def set_refund_data(self):
         """Get the refund data from MongoDB for the given timespan.
         """
@@ -548,10 +599,10 @@ class ReportData():
                     'path': '$returns.return_line_items.return_modifiers',
                     'preserveNullAndEmptyArrays': True
                 }
-            }, {
-                '$unwind': {
-                    'path': '$returns.return_taxes'
-                }
+            # }, {
+            #     '$unwind': {
+            #         'path': '$returns.return_taxes'
+            #     }
             }, {
                 '$addFields': {
                     'base_refund_money': '$returns.return_line_items.gross_return_money',
@@ -855,10 +906,10 @@ class ReportData():
                 '$unwind': {
                     'path': '$order.returns'
                 }
-            }, {
-                '$unwind': {
-                    'path': '$order.returns.return_taxes'
-                }
+            # }, {
+            #     '$unwind': {
+            #         'path': '$order.returns.return_taxes'
+            #     }
             }, {
                 '$addFields': {
                     'gross_return_money_amount': {
@@ -987,7 +1038,7 @@ class ReportData():
         )
 
         # calculate all net
-        headings = ['summary', 'collected', 'category_sales', 'cost']
+        headings = ['summary', 'collected', 'sales_tax', 'category_sales', 'cost']
         for heading in headings:
             subheadings = self.data[heading]
             for sub in subheadings:
