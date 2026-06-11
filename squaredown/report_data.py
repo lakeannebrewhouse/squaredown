@@ -870,7 +870,7 @@ class ReportData():
                 '$group': {
                     '_id': '$returns.return_taxes.name', 
                     'total_tax_refund_money_amount': {
-                        '$sum': '$return_amounts.tax_money.amount'
+                        '$sum': '$returns.return_taxes.applied_money.amount'
                     }
                 }
             }
