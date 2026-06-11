@@ -50,6 +50,7 @@ class ReportData():
         self.set_processing_fee_refund()
         self.set_category_refund_data()
         self.set_collected_refund_data()
+        self.set_refund_data_tax()
 
         # calculate cost
         self.set_cost_sales_data()
@@ -833,6 +834,58 @@ class ReportData():
                 self.data['summary']['tip']['refunds'] -= (
                     refund_data['total_tip_refund_money_amount']
                 )
+
+    def set_refund_data_tax(self):
+        """Get the refund tax data from MongoDB for the given timespan.
+        """
+        pipeline = [
+            {
+                '$match': {
+                    'created_at': {
+                        '$gte': datetime.fromisoformat(self.data['timespan']['start']),
+                        '$lt': datetime.fromisoformat(self.data['timespan']['end'])
+                    }, 
+                    'state': {
+                        '$in': [
+                            'COMPLETED'
+                        ]
+                    }, 
+                    'returns': {
+                        '$exists': 1
+                    }
+                }
+            }, {
+                '$unwind': {
+                    'path': '$returns', 
+                    'includeArrayIndex': 'return_index', 
+                    'preserveNullAndEmptyArrays': False
+                }
+            }, {
+                '$unwind': {
+                    'path': '$returns.return_taxes', 
+                    'includeArrayIndex': 'return_tax_index', 
+                    'preserveNullAndEmptyArrays': False
+                }
+            }, {
+                '$group': {
+                    '_id': '$returns.return_taxes.name', 
+                    'total_tax_refund_money_amount': {
+                        '$sum': '$return_amounts.tax_money.amount'
+                    }
+                }
+            }
+        ]
+        
+        results = list(self.mdb.square_orders.aggregate(pipeline=pipeline))
+
+        if results:
+            for tax in results:
+                tax_name = tax['_id']
+
+                if 'VA' in tax_name:
+                    self.data['sales_tax']['state']['refunds'] -= tax['total_tax_refund_money_amount']
+                else:
+                    self.data['sales_tax']['local']['refunds'] -= tax['total_tax_refund_money_amount']
 
     def set_processing_fee_refund(self):
         """Get the total processing fees from MongoDB for the given timespan.
