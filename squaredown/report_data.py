@@ -549,10 +549,12 @@ class ReportData():
             for tax in results:
                 tax_name = tax['_id']
                 self.data['sales_tax']['total']['sales'] += tax['amount']
-                if 'VA' in tax_name:
+                if tax_name in ('VA State/Local Sales Tax', 'Tax Included'):
                     self.data['sales_tax']['state']['sales'] += tax['amount']
-                else:
+                elif tax_name in ('Fairfax Meals Tax'):
                     self.data['sales_tax']['local']['sales'] += tax['amount']
+                else:
+                    logger.error('unhandled tax refund found: %s', tax_name)
 
         # check total sales tax against summary tax amount
         if self.data['sales_tax']['total']['sales'] != self.data['summary']['tax']['sales']:
@@ -882,10 +884,12 @@ class ReportData():
             for tax in results:
                 tax_name = tax['_id']
 
-                if 'VA' in tax_name:
+                if tax_name in ('VA State/Local Sales Tax', 'Tax Included'):
                     self.data['sales_tax']['state']['refunds'] -= tax['total_tax_refund_money_amount']
-                else:
+                elif tax_name in ('Fairfax Meals Tax'):
                     self.data['sales_tax']['local']['refunds'] -= tax['total_tax_refund_money_amount']
+                else:
+                    logger.error('unhandled tax refund found: %s', tax_name)
 
     def set_processing_fee_refund(self):
         """Get the total processing fees from MongoDB for the given timespan.
