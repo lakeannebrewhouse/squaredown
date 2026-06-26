@@ -582,8 +582,12 @@ class ReportData():
                     'created_at': {
                         '$gte': datetime.fromisoformat(self.data['timespan']['start']),
                         '$lt': datetime.fromisoformat(self.data['timespan']['end'])
-                    },
-                    'state': {'$in': ['COMPLETED']},
+                    }, 
+                    'state': {
+                        '$in': [
+                            'COMPLETED'
+                        ]
+                    }, 
                     'refunds': {
                         '$exists': 1
                     }
@@ -594,77 +598,80 @@ class ReportData():
                 }
             }, {
                 '$unwind': {
-                    'path': '$returns.return_line_items',
+                    'path': '$returns.return_line_items', 
                     'includeArrayIndex': 'line_item_index'
                 }
             }, {
                 '$unwind': {
-                    'path': '$returns.return_line_items.return_modifiers',
+                    'path': '$returns.return_line_items.return_modifiers', 
                     'preserveNullAndEmptyArrays': True
                 }
-            # }, {
-            #     '$unwind': {
-            #         'path': '$returns.return_taxes'
-            #     }
             }, {
                 '$addFields': {
-                    'base_refund_money': '$returns.return_line_items.gross_return_money',
+                    'return_taxes_inclusive': {
+                        '$filter': {
+                            'input': '$returns.return_taxes', 
+                            'as': 'tax_item', 
+                            'cond': {
+                                '$eq': [
+                                    '$$tax_item.type', 'INCLUSIVE'
+                                ]
+                            }
+                        }
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'return_tax_inclusive_money': {
+                        'amount': {
+                            '$sum': '$return_taxes_inclusive.applied_money.amount'
+                        }, 
+                        'currency': 'USD'
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'base_refund_money': '$returns.return_line_items.gross_return_money', 
                     'modifier_refund_money': {
                         '$ifNull': [
                             '$returns.return_line_items.return_modifiers.total_price_money', {
-                                'amount': 0,
+                                'amount': 0, 
                                 'currency': 'USD'
                             }
                         ]
-                    },
-                    'discount_money': '$returns.return_line_items.total_discount_money',
+                    }, 
+                    'discount_money': '$returns.return_line_items.total_discount_money', 
                     'tax_money': '$returns.return_line_items.total_tax_money'
                 }
             }, {
                 '$addFields': {
                     'gross_refund_money': {
                         'amount': {
-                            '$add': [
-                                '$base_refund_money.amount', '$modifier_refund_money.amount'
+                            '$subtract': [
+                                {
+                                    '$add': [
+                                        '$base_refund_money.amount', '$modifier_refund_money.amount'
+                                    ]
+                                }, '$return_tax_inclusive_money.amount'
                             ]
-                        },
+                        }, 
                         'currency': 'USD'
                     }
                 }
             }, {
                 '$addFields': {
-                    'gross_refund_money_amount': {
-                        '$cond': {
-                            'if': {
-                                '$eq': [
-                                    '$returns.return_taxes.type', 'INCLUSIVE'
-                                ]
-                            }, 
-                            'then': {
-                                '$subtract': [
-                                    '$gross_refund_money.amount', '$tax_money.amount'
-                                ]
-                            }, 
-                            'else': '$gross_refund_money.amount'
-                        }
-                    }
-                }
-            }, {
-                '$addFields': {
-                    'net_refund_money_amount': {
-                        '$subtract': [
-                            '$gross_refund_money_amount', '$discount_money.amount'
-                        ]
+                    'net_refund_money': {
+                        'amount': {
+                            '$subtract': [
+                                '$gross_refund_money.amount', '$discount_money.amount'
+                            ]
+                        }, 
+                        'currency': 'USD'
                     }
                 }
             }, {
                 '$unset': [
-                    'fulfillments',
-                    'net_amounts',
-                    'total_discount_money',
-                    'total_money',
-                    'total_tax_money',
-                    'total_tip_money'
+                    'fulfillments', 'net_amounts', 'total_discount_money', 'total_money', 'total_tax_money', 'total_tip_money'
                 ]
             }, {
                 '$set': {
@@ -674,27 +681,27 @@ class ReportData():
                                 '$gt': [
                                     '$line_item_index', 0
                                 ]
-                            },
-                            'then': 0,
+                            }, 
+                            'then': 0, 
                             'else': '$return_amounts.tip_money.amount'
                         }
                     }
                 }
             }, {
                 '$group': {
-                    '_id': None,
+                    '_id': None, 
                     'total_gross_refund_money_amount': {
-                        '$sum': '$gross_refund_money_amount'
-                    },
+                        '$sum': '$gross_refund_money.amount'
+                    }, 
                     'total_net_refund_money_amount': {
-                        '$sum': '$net_refund_money_amount'
-                    },
+                        '$sum': '$net_refund_money.amount'
+                    }, 
                     'total_discount_refund_money_amount': {
                         '$sum': '$discount_money.amount'
-                    },
+                    }, 
                     'total_tax_refund_money_amount': {
                         '$sum': '$tax_money.amount'
-                    },
+                    }, 
                     'total_tip_refund_money_amount': {
                         '$sum': '$tip_money.amount'
                     }
@@ -703,15 +710,12 @@ class ReportData():
                 '$addFields': {
                     'total_collected_refund_money_amount': {
                         '$add': [
-                            '$total_net_refund_money_amount',
-                            '$total_tax_refund_money_amount',
-                            '$total_tip_refund_money_amount'
+                            '$total_net_refund_money_amount', '$total_tax_refund_money_amount', '$total_tip_refund_money_amount'
                         ]
                     }
                 }
             }
         ]
-
         results = list(self.mdb.square_orders.aggregate(pipeline=pipeline))
 
         if results:
